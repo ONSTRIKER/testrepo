@@ -11,7 +11,34 @@ An automated Discord bot that records voice meetings, transcribes them using Ope
 - **Easy Commands**: Simple Discord commands to control the bot
 - **Organized Output**: Saves audio files, transcripts, and summaries in organized folders
 
-## Prerequisites
+## Two Ways to Use This Bot
+
+### Option 1: Windows Executable (.exe) - Easiest!
+
+**Best for:** Non-technical users who just want to run the bot.
+
+- No Python installation required
+- Double-click to run
+- See **[BUILD_EXE.md](BUILD_EXE.md)** for complete instructions
+
+**Quick Start:**
+1. Download/build `DiscordMeetingTranscriber.exe`
+2. Create `.env` file with API keys
+3. Install FFmpeg
+4. Run the .exe
+
+### Option 2: Python Script - Most Flexible
+
+**Best for:** Developers or those who want to customize the bot.
+
+- Requires Python installation
+- Easy to modify and update
+- Standard Discord bot deployment
+- Follow the instructions below
+
+---
+
+## Prerequisites (For Python Script Option)
 
 1. **Python 3.8+** installed on your system
 2. **Discord Bot Token** - [Create a bot on Discord Developer Portal](https://discord.com/developers/applications)
@@ -35,7 +62,9 @@ brew install ffmpeg
 **On Windows:**
 Download from [ffmpeg.org](https://ffmpeg.org/download.html) and add to PATH
 
-## Installation
+## Installation (Python Script)
+
+> **Want the .exe version instead?** See **[BUILD_EXE.md](BUILD_EXE.md)**
 
 ### 1. Clone the Repository
 

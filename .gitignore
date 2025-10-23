@@ -44,3 +44,10 @@ transcripts/
 # OS
 .DS_Store
 Thumbs.db
+
+# PyInstaller builds
+*.spec.backup
+DiscordMeetingTranscriber.exe
+DiscordMeetingTranscriber
+*.exe
+!build_exe.bat
