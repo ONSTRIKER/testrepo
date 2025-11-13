@@ -13,7 +13,7 @@ All engines and UI pages use these schemas for data exchange.
 
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -173,7 +173,7 @@ class IEPAccommodation(BaseModel):
 
     accommodation_type: AccommodationType
     enabled: bool = True
-    settings: Dict[str, any] = Field(
+    settings: Dict[str, Any] = Field(
         default_factory=dict,
         description="e.g., {'multiplier': 1.5} for extended time",
     )
@@ -186,7 +186,7 @@ class IEPData(BaseModel):
     primary_disability: DisabilityCategory
     secondary_disabilities: List[DisabilityCategory] = []
     accommodations: List[IEPAccommodation]
-    modifications: Dict[str, any] = Field(
+    modifications: Dict[str, Any] = Field(
         default_factory=dict,
         description="e.g., {'alternate_grading': True}",
     )
@@ -200,7 +200,7 @@ class IEPUpdate(BaseModel):
 
     primary_disability: Optional[DisabilityCategory] = None
     accommodations: Optional[List[IEPAccommodation]] = None
-    modifications: Optional[Dict[str, any]] = None
+    modifications: Optional[Dict[str, Any]] = None
 
 
 # PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
@@ -241,8 +241,8 @@ class AssessmentRecord(BaseModel):
     percentage: float = Field(..., ge=0.0, le=100.0)
 
     # Question-level data
-    responses: Dict[str, any] = Field(
-        default_factory=dict, description="Question ID ’ student response"
+    responses: Dict[str, Any] = Field(
+        default_factory=dict, description="Question ID ' student response"
     )
     correct_answers: List[str] = Field(default_factory=list)
     incorrect_answers: List[str] = Field(default_factory=list)
