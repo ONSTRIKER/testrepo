@@ -1,0 +1,547 @@
+{
+  "generated_at": "2025-11-13T05:53:27.067936",
+  "total_students": 18,
+  "class_id": "class_bio_101_cold_start",
+  "class_name": "Biology 101 - Period 3",
+  "grade_level": "9",
+  "subject": "Science",
+  "teacher_name": "Ms. Johnson",
+  "students": [
+    {
+      "student_id": "student_52bea6c29e69",
+      "student_name": "Emma Chen",
+      "grade_level": "9",
+      "has_iep": false,
+      "reading_level": "above_grade_level",
+      "tier_classification": "tier_1",
+      "initial_mastery": {
+        "photosynthesis_process": 0.85,
+        "cellular_respiration": 0.8,
+        "cell_structure": 0.9,
+        "dna_replication": 0.75,
+        "ecosystems": 0.88
+      },
+      "learning_preferences": {
+        "preferred_modalities": [
+          "visual",
+          "kinesthetic"
+        ],
+        "engagement_level": "high"
+      },
+      "notes": "Advanced student, participates actively, asks probing questions"
+    },
+    {
+      "student_id": "student_8f0368fb7d01",
+      "student_name": "Marcus Washington",
+      "grade_level": "9",
+      "has_iep": false,
+      "reading_level": "above_grade_level",
+      "tier_classification": "tier_1",
+      "initial_mastery": {
+        "photosynthesis_process": 0.82,
+        "cellular_respiration": 0.85,
+        "cell_structure": 0.88,
+        "dna_replication": 0.8,
+        "ecosystems": 0.83
+      },
+      "learning_preferences": {
+        "preferred_modalities": [
+          "reading",
+          "visual"
+        ],
+        "engagement_level": "high"
+      },
+      "notes": "Strong analytical skills, enjoys lab work"
+    },
+    {
+      "student_id": "student_b8b18e5ae752",
+      "student_name": "Sophia Rodriguez",
+      "grade_level": "9",
+      "has_iep": false,
+      "reading_level": "grade_level",
+      "tier_classification": "tier_1",
+      "initial_mastery": {
+        "photosynthesis_process": 0.78,
+        "cellular_respiration": 0.82,
+        "cell_structure": 0.85,
+        "dna_replication": 0.77,
+        "ecosystems": 0.8
+      },
+      "learning_preferences": {
+        "preferred_modalities": [
+          "visual",
+          "auditory"
+        ],
+        "engagement_level": "high"
+      },
+      "notes": "Excellent at connecting concepts, collaborative learner"
+    },
+    {
+      "student_id": "student_dbcdc95aad88",
+      "student_name": "James Kim",
+      "grade_level": "9",
+      "has_iep": false,
+      "reading_level": "grade_level",
+      "tier_classification": "tier_1",
+      "initial_mastery": {
+        "photosynthesis_process": 0.8,
+        "cellular_respiration": 0.78,
+        "cell_structure": 0.83,
+        "dna_replication": 0.81,
+        "ecosystems": 0.79
+      },
+      "learning_preferences": {
+        "preferred_modalities": [
+          "kinesthetic",
+          "visual"
+        ],
+        "engagement_level": "high"
+      },
+      "notes": "Hands-on learner, excels in lab activities"
+    },
+    {
+      "student_id": "student_5856b7f1d2fe",
+      "student_name": "Olivia Martinez",
+      "grade_level": "9",
+      "has_iep": false,
+      "reading_level": "grade_level",
+      "tier_classification": "tier_2",
+      "initial_mastery": {
+        "photosynthesis_process": 0.65,
+        "cellular_respiration": 0.62,
+        "cell_structure": 0.68,
+        "dna_replication": 0.6,
+        "ecosystems": 0.67
+      },
+      "learning_preferences": {
+        "preferred_modalities": [
+          "visual",
+          "auditory"
+        ],
+        "engagement_level": "medium"
+      },
+      "notes": "Benefits from graphic organizers and visual aids"
+    },
+    {
+      "student_id": "student_086a37421673",
+      "student_name": "Liam Johnson",
+      "grade_level": "9",
+      "has_iep": false,
+      "reading_level": "grade_level",
+      "tier_classification": "tier_2",
+      "initial_mastery": {
+        "photosynthesis_process": 0.63,
+        "cellular_respiration": 0.65,
+        "cell_structure": 0.64,
+        "dna_replication": 0.62,
+        "ecosystems": 0.66
+      },
+      "learning_preferences": {
+        "preferred_modalities": [
+          "auditory",
+          "kinesthetic"
+        ],
+        "engagement_level": "medium"
+      },
+      "notes": "Steady learner, benefits from repetition and practice"
+    },
+    {
+      "student_id": "student_0c17ef6a94f2",
+      "student_name": "Ava Patel",
+      "grade_level": "9",
+      "has_iep": false,
+      "reading_level": "grade_level",
+      "tier_classification": "tier_2",
+      "initial_mastery": {
+        "photosynthesis_process": 0.6,
+        "cellular_respiration": 0.63,
+        "cell_structure": 0.61,
+        "dna_replication": 0.58,
+        "ecosystems": 0.64
+      },
+      "learning_preferences": {
+        "preferred_modalities": [
+          "reading",
+          "visual"
+        ],
+        "engagement_level": "medium"
+      },
+      "notes": "Strong work ethic, sometimes needs extra time"
+    },
+    {
+      "student_id": "student_2bebdf9f17f1",
+      "student_name": "Noah Thompson",
+      "grade_level": "9",
+      "has_iep": false,
+      "reading_level": "below_grade_level",
+      "tier_classification": "tier_2",
+      "initial_mastery": {
+        "photosynthesis_process": 0.58,
+        "cellular_respiration": 0.6,
+        "cell_structure": 0.62,
+        "dna_replication": 0.55,
+        "ecosystems": 0.61
+      },
+      "learning_preferences": {
+        "preferred_modalities": [
+          "visual",
+          "kinesthetic"
+        ],
+        "engagement_level": "medium"
+      },
+      "notes": "Strong conceptual understanding, reading challenges"
+    },
+    {
+      "student_id": "student_f21be0bad938",
+      "student_name": "Isabella Garcia",
+      "grade_level": "9",
+      "has_iep": false,
+      "reading_level": "grade_level",
+      "tier_classification": "tier_2",
+      "initial_mastery": {
+        "photosynthesis_process": 0.64,
+        "cellular_respiration": 0.61,
+        "cell_structure": 0.66,
+        "dna_replication": 0.63,
+        "ecosystems": 0.62
+      },
+      "learning_preferences": {
+        "preferred_modalities": [
+          "auditory",
+          "visual"
+        ],
+        "engagement_level": "medium"
+      },
+      "notes": "Collaborative learner, works well in groups"
+    },
+    {
+      "student_id": "student_217d9345f7f4",
+      "student_name": "Ethan Brown",
+      "grade_level": "9",
+      "has_iep": false,
+      "reading_level": "below_grade_level",
+      "tier_classification": "tier_3",
+      "initial_mastery": {
+        "photosynthesis_process": 0.4,
+        "cellular_respiration": 0.38,
+        "cell_structure": 0.42,
+        "dna_replication": 0.35,
+        "ecosystems": 0.41
+      },
+      "learning_preferences": {
+        "preferred_modalities": [
+          "kinesthetic",
+          "visual"
+        ],
+        "engagement_level": "medium"
+      },
+      "notes": "Needs significant scaffolding, benefits from sentence frames"
+    },
+    {
+      "student_id": "student_c0c264a3f21b",
+      "student_name": "Mia Davis",
+      "grade_level": "9",
+      "has_iep": false,
+      "reading_level": "below_grade_level",
+      "tier_classification": "tier_3",
+      "initial_mastery": {
+        "photosynthesis_process": 0.38,
+        "cellular_respiration": 0.4,
+        "cell_structure": 0.37,
+        "dna_replication": 0.36,
+        "ecosystems": 0.39
+      },
+      "learning_preferences": {
+        "preferred_modalities": [
+          "visual",
+          "auditory"
+        ],
+        "engagement_level": "low"
+      },
+      "notes": "English learner, benefits from visual supports and word banks"
+    },
+    {
+      "student_id": "student_0ee35f2ccbb4",
+      "student_name": "Alexander Wilson",
+      "grade_level": "9",
+      "has_iep": false,
+      "reading_level": "below_grade_level",
+      "tier_classification": "tier_3",
+      "initial_mastery": {
+        "photosynthesis_process": 0.42,
+        "cellular_respiration": 0.39,
+        "cell_structure": 0.44,
+        "dna_replication": 0.38,
+        "ecosystems": 0.4
+      },
+      "learning_preferences": {
+        "preferred_modalities": [
+          "kinesthetic",
+          "auditory"
+        ],
+        "engagement_level": "medium"
+      },
+      "notes": "Benefits from hands-on activities and reduced question sets"
+    },
+    {
+      "student_id": "student_e24c8f01e637",
+      "student_name": "Daniel Lee",
+      "grade_level": "9",
+      "has_iep": true,
+      "reading_level": "below_grade_level",
+      "tier_classification": "tier_2",
+      "primary_disability": "Specific Learning Disability",
+      "disability_category": "LEARNING_DISABILITY",
+      "accommodations": [
+        {
+          "type": "EXTENDED_TIME",
+          "description": "1.5x time on all assessments",
+          "details": "Student processes information more slowly"
+        },
+        {
+          "type": "TEXT_TO_SPEECH",
+          "description": "Text-to-speech for all reading materials",
+          "details": "Dyslexia - struggles with decoding"
+        },
+        {
+          "type": "GRAPHIC_ORGANIZERS",
+          "description": "Graphic organizers for all note-taking",
+          "details": "Helps organize information visually"
+        }
+      ],
+      "initial_mastery": {
+        "photosynthesis_process": 0.55,
+        "cellular_respiration": 0.52,
+        "cell_structure": 0.58,
+        "dna_replication": 0.5,
+        "ecosystems": 0.56
+      },
+      "learning_preferences": {
+        "preferred_modalities": [
+          "visual",
+          "auditory"
+        ],
+        "engagement_level": "medium"
+      },
+      "notes": "Strong conceptual understanding when given proper supports"
+    },
+    {
+      "student_id": "student_34d3d5952a79",
+      "student_name": "Aiden Taylor",
+      "grade_level": "9",
+      "has_iep": true,
+      "reading_level": "grade_level",
+      "tier_classification": "tier_2",
+      "primary_disability": "ADHD",
+      "disability_category": "ADHD",
+      "accommodations": [
+        {
+          "type": "MOVEMENT_BREAKS",
+          "description": "Movement breaks every 20 minutes",
+          "details": "Helps maintain focus and attention"
+        },
+        {
+          "type": "PREFERENTIAL_SEATING",
+          "description": "Preferential seating near teacher",
+          "details": "Minimizes distractions"
+        },
+        {
+          "type": "REDUCED_QUESTIONS",
+          "description": "Reduced number of questions on assignments",
+          "details": "Maintains quality while reducing overwhelm"
+        }
+      ],
+      "initial_mastery": {
+        "photosynthesis_process": 0.68,
+        "cellular_respiration": 0.65,
+        "cell_structure": 0.7,
+        "dna_replication": 0.63,
+        "ecosystems": 0.67
+      },
+      "learning_preferences": {
+        "preferred_modalities": [
+          "kinesthetic",
+          "visual"
+        ],
+        "engagement_level": "medium"
+      },
+      "notes": "Bright student, benefits from structured environment and movement"
+    },
+    {
+      "student_id": "student_0c8dee5beef4",
+      "student_name": "Charlotte Anderson",
+      "grade_level": "9",
+      "has_iep": true,
+      "reading_level": "below_grade_level",
+      "tier_classification": "tier_3",
+      "primary_disability": "Autism Spectrum Disorder",
+      "disability_category": "AUTISM",
+      "accommodations": [
+        {
+          "type": "VISUAL_SUPPORTS",
+          "description": "Visual schedules and supports",
+          "details": "Reduces anxiety about transitions and expectations"
+        },
+        {
+          "type": "SENTENCE_FRAMES",
+          "description": "Sentence frames for written responses",
+          "details": "Provides structure for expression"
+        },
+        {
+          "type": "PREFERENTIAL_SEATING",
+          "description": "Quiet area away from high-traffic zones",
+          "details": "Reduces sensory overload"
+        }
+      ],
+      "initial_mastery": {
+        "photosynthesis_process": 0.48,
+        "cellular_respiration": 0.45,
+        "cell_structure": 0.5,
+        "dna_replication": 0.43,
+        "ecosystems": 0.47
+      },
+      "learning_preferences": {
+        "preferred_modalities": [
+          "visual",
+          "reading"
+        ],
+        "engagement_level": "medium"
+      },
+      "notes": "Detail-oriented, strong memorization, benefits from structured routines"
+    },
+    {
+      "student_id": "student_df3ea8420e7e",
+      "student_name": "Ryan Martinez",
+      "grade_level": "9",
+      "has_iep": true,
+      "reading_level": "below_grade_level",
+      "tier_classification": "tier_3",
+      "primary_disability": "Specific Learning Disability - Dysgraphia",
+      "disability_category": "LEARNING_DISABILITY",
+      "accommodations": [
+        {
+          "type": "SCRIBE",
+          "description": "Scribe for extended written responses",
+          "details": "Physical act of writing is extremely difficult"
+        },
+        {
+          "type": "EXTENDED_TIME",
+          "description": "Double time on written assessments",
+          "details": "Writing takes significantly longer"
+        },
+        {
+          "type": "WORD_BANK",
+          "description": "Word banks for fill-in-blank questions",
+          "details": "Reduces spelling/writing demands"
+        }
+      ],
+      "initial_mastery": {
+        "photosynthesis_process": 0.6,
+        "cellular_respiration": 0.58,
+        "cell_structure": 0.62,
+        "dna_replication": 0.55,
+        "ecosystems": 0.59
+      },
+      "learning_preferences": {
+        "preferred_modalities": [
+          "auditory",
+          "kinesthetic"
+        ],
+        "engagement_level": "medium"
+      },
+      "notes": "Strong verbal skills, written output does not reflect understanding"
+    },
+    {
+      "student_id": "student_f05221ebd017",
+      "student_name": "Grace Johnson",
+      "grade_level": "9",
+      "has_iep": true,
+      "reading_level": "below_grade_level",
+      "tier_classification": "tier_3",
+      "primary_disability": "Speech-Language Impairment",
+      "disability_category": "SPEECH_LANGUAGE",
+      "accommodations": [
+        {
+          "type": "AUDIO_RECORDINGS",
+          "description": "Audio recordings of lectures",
+          "details": "Can review material at own pace"
+        },
+        {
+          "type": "EXTENDED_TIME",
+          "description": "Extended time for oral presentations",
+          "details": "Needs extra time to formulate verbal responses"
+        },
+        {
+          "type": "SENTENCE_FRAMES",
+          "description": "Sentence frames for verbal and written responses",
+          "details": "Provides language structure support"
+        }
+      ],
+      "initial_mastery": {
+        "photosynthesis_process": 0.52,
+        "cellular_respiration": 0.5,
+        "cell_structure": 0.54,
+        "dna_replication": 0.48,
+        "ecosystems": 0.53
+      },
+      "learning_preferences": {
+        "preferred_modalities": [
+          "visual",
+          "reading"
+        ],
+        "engagement_level": "medium"
+      },
+      "notes": "Strong comprehension, expressive language challenges"
+    },
+    {
+      "student_id": "student_a8c6bc00e097",
+      "student_name": "Jackson White",
+      "grade_level": "9",
+      "has_iep": true,
+      "reading_level": "below_grade_level",
+      "tier_classification": "tier_2",
+      "primary_disability": "Emotional Disturbance - Anxiety Disorder",
+      "disability_category": "EMOTIONAL_DISTURBANCE",
+      "accommodations": [
+        {
+          "type": "EXTENDED_TIME",
+          "description": "Extended time on assessments",
+          "details": "Anxiety can slow processing during tests"
+        },
+        {
+          "type": "MOVEMENT_BREAKS",
+          "description": "Breaks as needed to manage anxiety",
+          "details": "Can leave room for brief breaks to self-regulate"
+        },
+        {
+          "type": "PREFERENTIAL_SEATING",
+          "description": "Seat near door for easy exit",
+          "details": "Reduces anxiety about being 'trapped'"
+        }
+      ],
+      "initial_mastery": {
+        "photosynthesis_process": 0.7,
+        "cellular_respiration": 0.68,
+        "cell_structure": 0.72,
+        "dna_replication": 0.66,
+        "ecosystems": 0.69
+      },
+      "learning_preferences": {
+        "preferred_modalities": [
+          "reading",
+          "visual"
+        ],
+        "engagement_level": "medium"
+      },
+      "notes": "Capable student, anxiety interferes with performance on assessments"
+    }
+  ],
+  "statistics": {
+    "total": 18,
+    "non_iep": 12,
+    "iep": 6,
+    "tier_1": 4,
+    "tier_2": 8,
+    "tier_3": 6
+  }
+}

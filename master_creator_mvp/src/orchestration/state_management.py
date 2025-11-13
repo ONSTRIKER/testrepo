@@ -1,0 +1,306 @@
+"""
+LangGraph State Management
+
+Defines state schemas for the Master Creator v3 pipeline.
+
+State is passed between nodes in the LangGraph execution graph,
+allowing for complex, stateful workflows with conditional routing.
+"""
+
+from typing import TypedDict, Optional, List, Dict, Any
+from datetime import datetime
+
+
+# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# PIPELINE STATE
+# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+
+
+class PipelineState(TypedDict, total=False):
+    """
+    State passed through LangGraph pipeline.
+
+    TypedDict allows for type checking while maintaining
+    compatibility with LangGraph's state management.
+    """
+
+    # 
+    # INPUT PARAMETERS
+    # 
+
+    # Lesson parameters
+    lesson_topic: str
+    grade_level: str
+    subject: str
+    class_id: str
+    duration_minutes: int
+    standards: Optional[List[str]]
+
+    # Unit planning (optional)
+    generate_unit: bool  # If True, run Engine 0 first
+    num_lessons_in_unit: Optional[int]
+
+    # Diagnostic parameters
+    concept_ids: List[str]
+    num_questions_per_concept: int
+
+    # Worksheet parameters
+    num_questions_per_tier: Optional[Dict[str, int]]
+
+    # Adaptive personalization (optional)
+    generate_adaptive_plan: bool  # If True, run Engine 4
+
+    # Feedback loop (optional)
+    run_feedback_loop: bool  # If True, run Engine 6
+
+    # 
+    # EXECUTION STATE
+    # 
+
+    # Pipeline metadata
+    pipeline_id: str
+    execution_status: str  # "in_progress", "completed", "failed"
+    current_stage: str  # Current engine being executed
+    started_at: str
+    completed_at: Optional[str]
+
+    # Error tracking
+    errors: List[str]
+    warnings: List[str]
+
+    # 
+    # ENGINE OUTPUTS
+    # 
+
+    # Engine 0: Unit Plan (optional)
+    unit_plan: Optional[Dict[str, Any]]
+    unit_plan_id: Optional[str]
+
+    # Engine 1: Lesson Blueprint
+    lesson: Optional[Dict[str, Any]]
+    lesson_id: Optional[str]
+    learning_objectives: Optional[List[str]]
+
+    # Engine 5: Diagnostic Results
+    diagnostic: Optional[Dict[str, Any]]
+    diagnostic_id: Optional[str]
+    tier_distribution: Optional[Dict[str, int]]
+
+    # Engine 2: Worksheets
+    worksheets: Optional[Dict[str, Any]]
+    worksheet_id: Optional[str]
+
+    # Engine 3: Modified Worksheets (with IEP)
+    modified_worksheets: Optional[Dict[str, Any]]
+    modified_worksheet_id: Optional[str]
+    iep_students_count: Optional[int]
+
+    # Engine 4: Adaptive Plan (optional)
+    adaptive_plan: Optional[Dict[str, Any]]
+    adaptive_plan_id: Optional[str]
+
+    # Engine 6: Feedback Report (optional)
+    feedback_report: Optional[Dict[str, Any]]
+    feedback_id: Optional[str]
+
+    # 
+    # COST TRACKING
+    # 
+
+    total_cost: float
+    cost_breakdown: Dict[str, float]
+
+    # Token usage per engine
+    token_usage: Dict[str, Dict[str, int]]  # {engine_name: {input: X, output: Y}}
+
+    # 
+    # CONDITIONAL ROUTING FLAGS
+    # 
+
+    # Skip flags (set during execution based on conditions)
+    skip_unit_plan: bool
+    skip_adaptive_plan: bool
+    skip_feedback_loop: bool
+
+    # Retry flags
+    retry_count: Dict[str, int]  # {engine_name: retry_count}
+    max_retries: int
+
+
+# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# STATE INITIALIZATION
+# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+
+
+def initialize_pipeline_state(
+    lesson_topic: str,
+    grade_level: str,
+    subject: str,
+    class_id: str,
+    concept_ids: List[str],
+    duration_minutes: int = 45,
+    standards: Optional[List[str]] = None,
+    generate_unit: bool = False,
+    num_lessons_in_unit: Optional[int] = None,
+    generate_adaptive_plan: bool = False,
+    run_feedback_loop: bool = False,
+) -> PipelineState:
+    """
+    Initialize pipeline state with input parameters.
+
+    Args:
+        lesson_topic: Lesson topic
+        grade_level: Grade level
+        subject: Subject area
+        class_id: Class identifier
+        concept_ids: Concepts to assess
+        duration_minutes: Lesson duration
+        standards: Standards addressed
+        generate_unit: If True, run Engine 0 first
+        num_lessons_in_unit: Number of lessons in unit
+        generate_adaptive_plan: If True, run Engine 4
+        run_feedback_loop: If True, run Engine 6
+
+    Returns:
+        Initialized PipelineState
+    """
+    import uuid
+
+    pipeline_id = f"pipeline_{uuid.uuid4().hex[:12]}"
+    started_at = datetime.utcnow().isoformat()
+
+    return PipelineState(
+        # Input parameters
+        lesson_topic=lesson_topic,
+        grade_level=grade_level,
+        subject=subject,
+        class_id=class_id,
+        duration_minutes=duration_minutes,
+        standards=standards or [],
+        generate_unit=generate_unit,
+        num_lessons_in_unit=num_lessons_in_unit,
+        concept_ids=concept_ids,
+        num_questions_per_concept=3,
+        num_questions_per_tier={"tier_1": 5, "tier_2": 4, "tier_3": 3},
+        generate_adaptive_plan=generate_adaptive_plan,
+        run_feedback_loop=run_feedback_loop,
+        # Execution state
+        pipeline_id=pipeline_id,
+        execution_status="in_progress",
+        current_stage="initialization",
+        started_at=started_at,
+        completed_at=None,
+        errors=[],
+        warnings=[],
+        # Engine outputs (all None initially)
+        unit_plan=None,
+        unit_plan_id=None,
+        lesson=None,
+        lesson_id=None,
+        learning_objectives=None,
+        diagnostic=None,
+        diagnostic_id=None,
+        tier_distribution=None,
+        worksheets=None,
+        worksheet_id=None,
+        modified_worksheets=None,
+        modified_worksheet_id=None,
+        iep_students_count=None,
+        adaptive_plan=None,
+        adaptive_plan_id=None,
+        feedback_report=None,
+        feedback_id=None,
+        # Cost tracking
+        total_cost=0.0,
+        cost_breakdown={},
+        token_usage={},
+        # Conditional routing
+        skip_unit_plan=not generate_unit,
+        skip_adaptive_plan=not generate_adaptive_plan,
+        skip_feedback_loop=not run_feedback_loop,
+        retry_count={},
+        max_retries=2,
+    )
+
+
+# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+# STATE HELPERS
+# PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+
+
+def add_error(state: PipelineState, error_message: str) -> PipelineState:
+    """Add error to state."""
+    state["errors"].append(error_message)
+    return state
+
+
+def add_warning(state: PipelineState, warning_message: str) -> PipelineState:
+    """Add warning to state."""
+    state["warnings"].append(warning_message)
+    return state
+
+
+def update_cost(
+    state: PipelineState,
+    engine_name: str,
+    cost: float,
+    input_tokens: int = 0,
+    output_tokens: int = 0,
+) -> PipelineState:
+    """Update cost tracking in state."""
+    state["cost_breakdown"][engine_name] = cost
+    state["total_cost"] += cost
+
+    state["token_usage"][engine_name] = {
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+    }
+
+    return state
+
+
+def mark_stage_complete(
+    state: PipelineState,
+    stage_name: str,
+    success: bool = True,
+) -> PipelineState:
+    """Mark a stage as complete."""
+    if success:
+        state["current_stage"] = f"{stage_name}_completed"
+    else:
+        state["current_stage"] = f"{stage_name}_failed"
+        state["execution_status"] = "failed"
+
+    return state
+
+
+def finalize_pipeline(
+    state: PipelineState,
+    success: bool = True,
+) -> PipelineState:
+    """Finalize pipeline execution."""
+    state["completed_at"] = datetime.utcnow().isoformat()
+
+    if success and not state["errors"]:
+        state["execution_status"] = "completed"
+    elif state["warnings"] and not state["errors"]:
+        state["execution_status"] = "completed_with_warnings"
+    else:
+        state["execution_status"] = "failed"
+
+    return state
+
+
+def should_retry(state: PipelineState, engine_name: str) -> bool:
+    """Check if an engine should be retried."""
+    retry_count = state["retry_count"].get(engine_name, 0)
+    max_retries = state["max_retries"]
+
+    return retry_count < max_retries
+
+
+def increment_retry(state: PipelineState, engine_name: str) -> PipelineState:
+    """Increment retry count for an engine."""
+    current_count = state["retry_count"].get(engine_name, 0)
+    state["retry_count"][engine_name] = current_count + 1
+    return state
