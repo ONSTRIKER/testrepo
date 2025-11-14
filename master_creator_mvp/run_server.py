@@ -7,6 +7,10 @@ import sys
 import os
 from pathlib import Path
 
+# Load environment variables from .env file FIRST
+from dotenv import load_dotenv
+load_dotenv()
+
 # Add current directory to Python path so 'src' module can be found
 current_dir = Path(__file__).parent
 sys.path.insert(0, str(current_dir))
