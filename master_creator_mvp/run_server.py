@@ -25,6 +25,25 @@ print(f"Python path: {current_dir}")
 print(f"Python version: {sys.version}")
 print()
 
+# DEBUG: Show what DATABASE_URL is loaded
+database_url = os.getenv("DATABASE_URL", "NOT SET")
+print(f"DATABASE_URL: {database_url}")
+if database_url.startswith("postgresql"):
+    print()
+    print("!" * 60)
+    print("ERROR: Database is set to PostgreSQL!")
+    print("!" * 60)
+    print()
+    print("Your .env file has the wrong DATABASE_URL.")
+    print("Please edit .env and change the DATABASE_URL line to:")
+    print("  DATABASE_URL=sqlite:///./master_creator.db")
+    print()
+    print("Then run this script again.")
+    print("!" * 60)
+    input("Press Enter to exit...")
+    sys.exit(1)
+print()
+
 # Import and run uvicorn
 import uvicorn
 
