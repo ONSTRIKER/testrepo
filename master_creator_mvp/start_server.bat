@@ -46,6 +46,9 @@ echo.
 echo Press Ctrl+C to stop the server
 echo.
 
+REM Set PYTHONPATH to current directory so Python can find 'src' module
+set PYTHONPATH=%CD%
+
 REM Start the server (no reload for Windows stability)
 python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8080
 
