@@ -2,10 +2,15 @@
 REM Master Creator MVP - Windows Setup Script
 REM ==========================================
 
+REM Change to the directory where this batch file is located
+cd /d "%~dp0"
+
 echo.
 echo ============================================
 echo Master Creator MVP - Windows Setup
 echo ============================================
+echo.
+echo Working directory: %CD%
 echo.
 
 REM Check if virtual environment exists

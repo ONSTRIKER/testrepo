@@ -2,6 +2,11 @@
 REM Install PostgreSQL driver for Python
 REM ======================================
 
+REM Change to the directory where this batch file is located
+cd /d "%~dp0"
+
+echo.
+echo Working directory: %CD%
 echo.
 echo Installing psycopg2-binary (PostgreSQL driver)...
 echo.

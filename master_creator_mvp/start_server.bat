@@ -2,10 +2,15 @@
 REM Master Creator MVP - Start Server Script
 REM =========================================
 
+REM Change to the directory where this batch file is located
+cd /d "%~dp0"
+
 echo.
 echo ============================================
 echo Master Creator MVP - Starting Server
 echo ============================================
+echo.
+echo Working directory: %CD%
 echo.
 
 REM Check if virtual environment exists
