@@ -38,18 +38,7 @@ if %errorlevel% == 0 (
     exit /b 1
 )
 
-echo.
-echo Starting API server...
-echo Server will be available at: http://localhost:8080
-echo API Documentation: http://localhost:8080/docs
-echo.
-echo Press Ctrl+C to stop the server
-echo.
-
-REM Set PYTHONPATH to current directory so Python can find 'src' module
-set PYTHONPATH=%CD%
-
-REM Start the server (no reload for Windows stability)
-python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8080
+REM Start the server using Python launcher script
+python run_server.py
 
 pause
