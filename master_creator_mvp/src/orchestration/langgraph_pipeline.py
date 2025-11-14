@@ -14,8 +14,21 @@ Features:
 import logging
 from typing import Literal, Optional
 from datetime import datetime
+import warnings
 
-from langgraph.graph import StateGraph, END
+# Make langgraph optional
+try:
+    from langgraph.graph import StateGraph, END
+    LANGGRAPH_AVAILABLE = True
+except ImportError:
+    LANGGRAPH_AVAILABLE = False
+    StateGraph = None
+    END = None
+    warnings.warn(
+        "langgraph not available. Advanced pipeline features will be disabled. "
+        "Install langgraph for full functionality: pip install langgraph"
+    )
+
 from pydantic import BaseModel
 
 from .state_management import (
