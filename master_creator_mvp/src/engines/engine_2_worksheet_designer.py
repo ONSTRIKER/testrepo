@@ -520,7 +520,7 @@ Respond ONLY with the JSON object."""
                 accommodation_counts[acc] = accommodation_counts.get(acc, 0) + 1
 
         # Build summary
-        summary = f"{len(students)} students " {len(iep_students)} with IEPs"
+        summary = f"{len(students)} students, {len(iep_students)} with IEPs"
 
         if accommodation_counts:
             top_accommodations = sorted(
