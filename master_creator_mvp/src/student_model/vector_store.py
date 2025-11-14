@@ -11,10 +11,20 @@ Used by Engine 4 (Adaptive Personalization) for semantic matching.
 
 import os
 from typing import Dict, List, Optional
+import warnings
 
-import chromadb
-from chromadb.config import Settings
-from chromadb.utils import embedding_functions
+# Try to import chromadb, but make it optional for basic functionality
+try:
+    import chromadb
+    from chromadb.config import Settings
+    from chromadb.utils import embedding_functions
+    CHROMADB_AVAILABLE = True
+except ImportError:
+    CHROMADB_AVAILABLE = False
+    warnings.warn(
+        "chromadb not available. Vector store features will be disabled. "
+        "Install chromadb for full functionality: pip install chromadb"
+    )
 
 # Chroma configuration from environment
 CHROMA_HOST = os.getenv("CHROMA_HOST", "localhost")
@@ -35,8 +45,11 @@ def get_chroma_client(persistent: bool = True):
         persistent: Use persistent storage (default True for production)
 
     Returns:
-        chromadb.Client instance
+        chromadb.Client instance or None if chromadb not available
     """
+    if not CHROMADB_AVAILABLE:
+        return None
+
     if persistent:
         # Connect to Chroma server (Docker container)
         return chromadb.HttpClient(
@@ -64,13 +77,22 @@ class StudentVectorStore:
     - content_vectors: Learning content for similarity matching
     """
 
-    def __init__(self, client: Optional[chromadb.Client] = None):
+    def __init__(self, client=None):
         """
         Initialize vector store.
 
         Args:
             client: Chroma client (creates new one if None)
         """
+        if not CHROMADB_AVAILABLE:
+            self.client = None
+            self.embedding_fn = None
+            self.learning_prefs_collection = None
+            self.concepts_collection = None
+            self.content_collection = None
+            warnings.warn("StudentVectorStore initialized without chromadb - vector features disabled")
+            return
+
         self.client = client if client is not None else get_chroma_client()
 
         # Use sentence transformers for embeddings
@@ -123,6 +145,9 @@ class StudentVectorStore:
                              (e.g., "Visual learner, prefers diagrams and videos")
             metadata: Additional metadata (learning_preferences list, reading_level, etc.)
         """
+        if not CHROMADB_AVAILABLE or self.client is None:
+            return
+
         self.learning_prefs_collection.upsert(
             ids=[student_id],
             documents=[preferences_text],
@@ -139,6 +164,9 @@ class StudentVectorStore:
         Returns:
             Dict with document, metadata, and embedding, or None if not found
         """
+        if not CHROMADB_AVAILABLE or self.client is None:
+            return None
+
         results = self.learning_prefs_collection.get(ids=[student_id], include=["documents", "metadatas", "embeddings"])
 
         if not results["ids"]:
@@ -166,6 +194,9 @@ class StudentVectorStore:
         Returns:
             List of dicts with similar student info
         """
+        if not CHROMADB_AVAILABLE or self.client is None:
+            return None
+
         # Get reference student's preferences
         ref_prefs = self.get_student_preferences(student_id)
         if not ref_prefs:
@@ -210,6 +241,9 @@ class StudentVectorStore:
             concept_description: Text description of the concept
             metadata: Additional metadata (prerequisites, difficulty, etc.)
         """
+        if not CHROMADB_AVAILABLE or self.client is None:
+            return None
+
         self.concepts_collection.upsert(
             ids=[concept_id],
             documents=[concept_description],
@@ -226,6 +260,9 @@ class StudentVectorStore:
         Returns:
             Dict with concept data, or None if not found
         """
+        if not CHROMADB_AVAILABLE or self.client is None:
+            return None
+
         results = self.concepts_collection.get(
             ids=[concept_id],
             include=["documents", "metadatas", "embeddings"],
@@ -256,6 +293,9 @@ class StudentVectorStore:
         Returns:
             List of dicts with related concept info
         """
+        if not CHROMADB_AVAILABLE or self.client is None:
+            return None
+
         # Get reference concept
         ref_concept = self.get_concept(concept_id)
         if not ref_concept:
@@ -299,6 +339,9 @@ class StudentVectorStore:
         Returns:
             List of matching concepts
         """
+        if not CHROMADB_AVAILABLE or self.client is None:
+            return None
+
         results = self.concepts_collection.query(
             query_texts=[query_text],
             n_results=n_results,
@@ -337,6 +380,9 @@ class StudentVectorStore:
             content_text: Content text (lesson, question, explanation, etc.)
             metadata: Additional metadata (content_type, difficulty, concepts, etc.)
         """
+        if not CHROMADB_AVAILABLE or self.client is None:
+            return None
+
         self.content_collection.upsert(
             ids=[content_id],
             documents=[content_text],
@@ -362,6 +408,9 @@ class StudentVectorStore:
         Returns:
             List of similar content items
         """
+        if not CHROMADB_AVAILABLE or self.client is None:
+            return None
+
         results = self.content_collection.query(
             query_texts=[query_text],
             n_results=n_results,
@@ -393,6 +442,9 @@ class StudentVectorStore:
         Returns:
             Dict mapping collection names to document counts
         """
+        if not CHROMADB_AVAILABLE or self.client is None:
+            return None
+
         return {
             "learning_preferences": self.learning_prefs_collection.count(),
             "concept_embeddings": self.concepts_collection.count(),
@@ -401,6 +453,9 @@ class StudentVectorStore:
 
     def reset_collections(self):
         """Delete all collections and recreate them (DESTROYS ALL DATA!)."""
+        if not CHROMADB_AVAILABLE or self.client is None:
+            return None
+
         print("  Resetting all vector store collections...")
 
         # Delete collections

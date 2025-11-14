@@ -315,40 +315,55 @@ Respond ONLY with the JSON object. No additional text."""
         Returns:
             Dict with parsed lesson data
         """
+        import re
+
+        # Try different extraction methods in order
+
+        # Method 1: Direct JSON parse
         try:
-            # Try to parse as JSON
             lesson_data = json.loads(response_text)
             return lesson_data
-
         except json.JSONDecodeError:
-            # If JSON parsing fails, try to extract JSON from response
-            self._log_decision("JSON parse error, attempting extraction", level="warning")
+            pass
 
-            # Look for JSON block in response
-            import re
-            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+        # Method 2: Extract from markdown code blocks (```json ... ```)
+        try:
+            self._log_decision("Attempting to extract JSON from markdown", level="info")
+            json_block_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', response_text, re.DOTALL)
+            if json_block_match:
+                lesson_data = json.loads(json_block_match.group(1))
+                self._log_decision("Successfully extracted JSON from markdown block", level="info")
+                return lesson_data
+        except (json.JSONDecodeError, AttributeError) as e:
+            self._log_decision(f"Markdown extraction failed: {e}", level="warning")
 
+        # Method 3: Find first complete JSON object
+        try:
+            self._log_decision("Attempting regex JSON extraction", level="info")
+            json_match = re.search(r'\{(?:[^{}]|(?:\{[^{}]*\}))*\}', response_text, re.DOTALL)
             if json_match:
-                try:
-                    lesson_data = json.loads(json_match.group(0))
-                    return lesson_data
-                except:
-                    pass
+                lesson_data = json.loads(json_match.group(0))
+                self._log_decision("Successfully extracted JSON via regex", level="info")
+                return lesson_data
+        except (json.JSONDecodeError, AttributeError) as e:
+            self._log_decision(f"Regex extraction failed: {e}", level="warning")
 
-            # Fallback: Return error structure
-            self._log_decision("Could not parse lesson response", level="error")
-            return {
-                "sections": [
-                    {
-                        "name": "Error",
-                        "duration": None,
-                        "content": "Failed to parse lesson response. Please try again.",
-                        "notes": response_text[:500],
-                    }
-                ],
-                "citations": [],
-                "timestamp": "",
-            }
+        # Fallback: Return error structure with response preview
+        self._log_decision("Could not parse lesson response - all methods failed", level="error")
+        self._log_decision(f"Response preview: {response_text[:200]}...", level="error")
+
+        return {
+            "sections": [
+                {
+                    "name": "Error",
+                    "duration": None,
+                    "content": "Failed to parse lesson response. Please try again.",
+                    "notes": response_text[:1000],  # Increased from 500 to see more
+                }
+            ],
+            "citations": [],
+            "timestamp": "",
+        }
 
 
 # ═══════════════════════════════════════════════════════════

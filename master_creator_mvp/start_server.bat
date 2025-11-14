@@ -2,10 +2,15 @@
 REM Master Creator MVP - Start Server Script
 REM =========================================
 
+REM Change to the directory where this batch file is located
+cd /d "%~dp0"
+
 echo.
 echo ============================================
 echo Master Creator MVP - Starting Server
 echo ============================================
+echo.
+echo Working directory: %CD%
 echo.
 
 REM Check if virtual environment exists
@@ -38,15 +43,7 @@ if %errorlevel% == 0 (
     exit /b 1
 )
 
-echo.
-echo Starting API server...
-echo Server will be available at: http://localhost:8080
-echo API Documentation: http://localhost:8080/docs
-echo.
-echo Press Ctrl+C to stop the server
-echo.
-
-REM Start the server (no reload for Windows stability)
-python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8080
+REM Start the server using Python launcher script
+python run_server.py
 
 pause

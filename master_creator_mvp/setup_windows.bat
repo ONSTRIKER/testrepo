@@ -2,10 +2,15 @@
 REM Master Creator MVP - Windows Setup Script
 REM ==========================================
 
+REM Change to the directory where this batch file is located
+cd /d "%~dp0"
+
 echo.
 echo ============================================
 echo Master Creator MVP - Windows Setup
 echo ============================================
+echo.
+echo Working directory: %CD%
 echo.
 
 REM Check if virtual environment exists
@@ -34,7 +39,7 @@ pip install --upgrade pip
 REM Install core packages first (no compilation needed)
 echo.
 echo Installing Python packages (this may take a few minutes)...
-pip install anthropic fastapi uvicorn pydantic python-dotenv sqlalchemy
+pip install anthropic fastapi uvicorn pydantic python-dotenv sqlalchemy python-multipart
 
 REM Try to install psycopg2-binary (PostgreSQL driver)
 echo.

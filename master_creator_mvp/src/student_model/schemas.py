@@ -203,6 +203,15 @@ class IEPUpdate(BaseModel):
     modifications: Optional[Dict[str, Any]] = None
 
 
+class IEPAccommodationUpdate(BaseModel):
+    """Schema for updating IEP accommodations via API."""
+
+    primary_disability: Optional[DisabilityCategory] = None
+    accommodations: Optional[List[IEPAccommodation]] = None
+    modifications: Optional[Dict[str, Any]] = None
+    review_date: Optional[datetime] = None
+
+
 # PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 # MASTERY & ASSESSMENT SCHEMAS
 # PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP

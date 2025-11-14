@@ -47,7 +47,7 @@ Base = declarative_base()
 
 # Database connection configuration
 DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql://admin:changeme@localhost:5432/master_creator"
+    "DATABASE_URL", "sqlite:///./master_creator.db"  # Default to SQLite for local development
 )
 
 
@@ -67,14 +67,23 @@ def get_engine(pool_size: int = 20, max_overflow: int = 40):
     Returns:
         SQLAlchemy Engine instance
     """
-    return create_engine(
-        DATABASE_URL,
-        poolclass=QueuePool,
-        pool_size=pool_size,
-        max_overflow=max_overflow,
-        pool_pre_ping=True,  # Verify connections before use
-        echo=False,  # Set True for SQL logging
-    )
+    # SQLite doesn't support connection pooling the same way as PostgreSQL
+    if DATABASE_URL.startswith("sqlite"):
+        return create_engine(
+            DATABASE_URL,
+            connect_args={"check_same_thread": False},  # Allow multi-threading
+            echo=False,  # Set True for SQL logging
+        )
+    else:
+        # PostgreSQL or other databases
+        return create_engine(
+            DATABASE_URL,
+            poolclass=QueuePool,
+            pool_size=pool_size,
+            max_overflow=max_overflow,
+            pool_pre_ping=True,  # Verify connections before use
+            echo=False,  # Set True for SQL logging
+        )
 
 
 def get_session_maker(engine=None):
