@@ -532,7 +532,7 @@ Respond ONLY with the JSON object."""
             acc_summary = ", ".join(
                 f"{acc} ({count})" for acc, count in top_accommodations
             )
-            summary += f" " Accommodations: {acc_summary}"
+            summary += f" - Accommodations: {acc_summary}"
 
         return summary
 
