@@ -315,7 +315,7 @@ def drop_tables(engine=None):
         engine = get_engine()
 
     Base.metadata.drop_all(bind=engine)
-    print("   All database tables dropped!")
+    print("All database tables dropped!")
 
 
 def reset_database(engine=None):
@@ -328,7 +328,7 @@ def reset_database(engine=None):
     if engine is None:
         engine = get_engine()
 
-    print("   Resetting database (this will delete all data)...")
+    print("ï¿½  Resetting database (this will delete all data)...")
     drop_tables(engine)
     create_tables(engine)
     print(" Database reset complete!")
@@ -365,7 +365,7 @@ def print_database_stats(session):
     counts = get_table_counts(session)
 
     print("\n" + "=" * 50)
-    print("=Ê DATABASE STATISTICS")
+    print("=ï¿½ DATABASE STATISTICS")
     print("=" * 50)
     for table, count in counts.items():
         print(f"  {table:20s}: {count:5d} rows")
@@ -402,7 +402,7 @@ Example:
     if command == "init":
         create_tables(engine)
     elif command == "reset":
-        confirm = input("   This will DELETE ALL DATA. Type 'yes' to confirm: ")
+        confirm = input("ï¿½  This will DELETE ALL DATA. Type 'yes' to confirm: ")
         if confirm.lower() == "yes":
             reset_database(engine)
         else:
@@ -414,7 +414,7 @@ Example:
         finally:
             session.close()
     elif command == "drop":
-        confirm = input("   This will DROP ALL TABLES. Type 'yes' to confirm: ")
+        confirm = input("ï¿½  This will DROP ALL TABLES. Type 'yes' to confirm: ")
         if confirm.lower() == "yes":
             drop_tables(engine)
         else:
