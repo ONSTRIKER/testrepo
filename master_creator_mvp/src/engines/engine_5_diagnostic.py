@@ -567,7 +567,7 @@ Respond ONLY with the JSON object. No additional text."""
 
         self._log_decision(
             f"Updated mastery for {student_id}/{concept_id}: "
-            f"{prior_mastery:.3f} ’ {updated_mastery:.3f} (tier: {tier.value})"
+            f"{prior_mastery:.3f} ' {updated_mastery:.3f} (tier: {tier.value})"
         )
 
         return StudentMasteryEstimate(

@@ -401,7 +401,7 @@ class StudentVectorStore:
 
     def reset_collections(self):
         """Delete all collections and recreate them (DESTROYS ALL DATA!)."""
-        print("   Resetting all vector store collections...")
+        print("  Resetting all vector store collections...")
 
         # Delete collections
         try:
@@ -457,14 +457,14 @@ Example:
     elif command == "stats":
         counts = store.get_collection_counts()
         print("\n" + "=" * 50)
-        print("=Ê VECTOR STORE STATISTICS")
+        print("= VECTOR STORE STATISTICS")
         print("=" * 50)
         for collection, count in counts.items():
             print(f"  {collection:25s}: {count:5d} documents")
         print("=" * 50 + "\n")
 
     elif command == "reset":
-        confirm = input("   This will DELETE ALL VECTORS. Type 'yes' to confirm: ")
+        confirm = input("  This will DELETE ALL VECTORS. Type 'yes' to confirm: ")
         if confirm.lower() == "yes":
             store.reset_collections()
         else:
