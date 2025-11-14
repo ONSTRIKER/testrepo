@@ -39,7 +39,7 @@ pip install --upgrade pip
 REM Install core packages first (no compilation needed)
 echo.
 echo Installing Python packages (this may take a few minutes)...
-pip install anthropic fastapi uvicorn pydantic python-dotenv sqlalchemy
+pip install anthropic fastapi uvicorn pydantic python-dotenv sqlalchemy python-multipart
 
 REM Try to install psycopg2-binary (PostgreSQL driver)
 echo.
