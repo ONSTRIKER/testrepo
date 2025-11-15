@@ -140,6 +140,14 @@ class LessonArchitect(BaseEngine):
         self._log_decision("Calling Claude API for lesson generation")
         response_text = self._call_claude(system_prompt, user_prompt)
 
+        # DEBUG: Save raw response for inspection
+        try:
+            with open('/tmp/claude_response.txt', 'w') as f:
+                f.write(response_text)
+            self._log_decision("Saved raw response to /tmp/claude_response.txt", level="info")
+        except:
+            pass
+
         # Step 4: Parse response into structured format
         lesson_data = self._parse_lesson_response(response_text)
 
@@ -188,9 +196,9 @@ class LessonArchitect(BaseEngine):
         # Get class roster summary
         roster = self.student_model.get_class_roster(class_id)
 
-        if not roster:
-            self._log_decision(f"Class {class_id} not found", level="warning")
-            return {"error": "Class not found"}
+        # If no roster found, return None
+        if roster is None:
+            return None
 
         # Get detailed student profiles
         students = self.student_model.get_class_students(class_id)
@@ -198,7 +206,7 @@ class LessonArchitect(BaseEngine):
         # Aggregate reading levels
         reading_level_counts = {}
         for student in students:
-            level = student.reading_level.value
+            level = student.reading_level.value if hasattr(student.reading_level, 'value') else str(student.reading_level)
             reading_level_counts[level] = reading_level_counts.get(level, 0) + 1
 
         # Get students with IEPs (detailed)
@@ -322,7 +330,8 @@ Respond ONLY with the JSON object. No additional text."""
         # Method 1: Direct JSON parse
         try:
             lesson_data = json.loads(response_text)
-            return lesson_data
+            if 'sections' in lesson_data:  # Validate it has the right structure
+                return lesson_data
         except json.JSONDecodeError:
             pass
 
@@ -332,21 +341,47 @@ Respond ONLY with the JSON object. No additional text."""
             json_block_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', response_text, re.DOTALL)
             if json_block_match:
                 lesson_data = json.loads(json_block_match.group(1))
-                self._log_decision("Successfully extracted JSON from markdown block", level="info")
-                return lesson_data
+                if 'sections' in lesson_data:
+                    self._log_decision("Successfully extracted JSON from markdown block", level="info")
+                    return lesson_data
         except (json.JSONDecodeError, AttributeError) as e:
             self._log_decision(f"Markdown extraction failed: {e}", level="warning")
 
-        # Method 3: Find first complete JSON object
+        # Method 3: Find JSON objects and look for one with 'sections'
         try:
-            self._log_decision("Attempting regex JSON extraction", level="info")
-            json_match = re.search(r'\{(?:[^{}]|(?:\{[^{}]*\}))*\}', response_text, re.DOTALL)
-            if json_match:
-                lesson_data = json.loads(json_match.group(0))
-                self._log_decision("Successfully extracted JSON via regex", level="info")
-                return lesson_data
-        except (json.JSONDecodeError, AttributeError) as e:
-            self._log_decision(f"Regex extraction failed: {e}", level="warning")
+            self._log_decision("Attempting to find JSON with 'sections' key", level="info")
+            # Find all potential JSON objects
+            potential_jsons = re.finditer(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', response_text, re.DOTALL)
+            for match in potential_jsons:
+                try:
+                    lesson_data = json.loads(match.group(0))
+                    if 'sections' in lesson_data:
+                        self._log_decision("Successfully found JSON with sections", level="info")
+                        return lesson_data
+                except json.JSONDecodeError:
+                    continue
+        except Exception as e:
+            self._log_decision(f"Search for sections failed: {e}", level="warning")
+
+        # Method 4: Try to extract the full text and parse it more aggressively
+        try:
+            self._log_decision("Attempting aggressive JSON extraction", level="info")
+            # Look for the opening brace and try to find the matching closing brace
+            start = response_text.find('{')
+            if start != -1:
+                brace_count = 0
+                for i in range(start, len(response_text)):
+                    if response_text[i] == '{':
+                        brace_count += 1
+                    elif response_text[i] == '}':
+                        brace_count -= 1
+                        if brace_count == 0:
+                            lesson_data = json.loads(response_text[start:i+1])
+                            if 'sections' in lesson_data:
+                                self._log_decision("Successfully extracted nested JSON", level="info")
+                                return lesson_data
+        except (json.JSONDecodeError, Exception) as e:
+            self._log_decision(f"Aggressive extraction failed: {e}", level="warning")
 
         # Fallback: Return error structure with response preview
         self._log_decision("Could not parse lesson response - all methods failed", level="error")
