@@ -50,16 +50,20 @@ def get_chroma_client(persistent: bool = True):
     if not CHROMADB_AVAILABLE:
         return None
 
-    if persistent:
-        # Connect to Chroma server (Docker container)
-        return chromadb.HttpClient(
-            host=CHROMA_HOST,
-            port=CHROMA_PORT,
-            settings=Settings(anonymized_telemetry=False),
-        )
-    else:
-        # In-memory client for testing
-        return chromadb.Client(Settings(anonymized_telemetry=False))
+    try:
+        if persistent:
+            # Connect to Chroma server (Docker container)
+            return chromadb.HttpClient(
+                host=CHROMA_HOST,
+                port=CHROMA_PORT,
+                settings=Settings(anonymized_telemetry=False),
+            )
+        else:
+            # In-memory client for testing
+            return chromadb.Client(Settings(anonymized_telemetry=False))
+    except Exception as e:
+        warnings.warn(f"Could not connect to Chroma server: {e}. Vector features will be disabled.")
+        return None
 
 
 # PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
@@ -94,6 +98,15 @@ class StudentVectorStore:
             return
 
         self.client = client if client is not None else get_chroma_client()
+
+        # If client is still None (connection failed), disable vector features
+        if self.client is None:
+            self.embedding_fn = None
+            self.learning_prefs_collection = None
+            self.concepts_collection = None
+            self.content_collection = None
+            warnings.warn("StudentVectorStore initialized without Chroma connection - vector features disabled")
+            return
 
         # Use sentence transformers for embeddings
         self.embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(

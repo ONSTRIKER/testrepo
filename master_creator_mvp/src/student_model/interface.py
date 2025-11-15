@@ -36,6 +36,7 @@ from .schemas import (
     ConceptMastery,
     DisabilityCategory,
     GradeLevel,
+    IEPAccommodation,
     IEPData,
     IEPUpdate,
     LearningPreference,
@@ -174,6 +175,61 @@ class StudentModelInterface:
             )
 
         return self.get_student_profile(student_id)
+
+    def create_iep(self, iep_data: "IEPCreate") -> "IEPData":
+        """
+        Create new IEP record for a student.
+
+        Args:
+            iep_data: IEP creation data
+
+        Returns:
+            Created IEPData
+        """
+        from datetime import datetime, timedelta
+
+        # Create IEP record
+        iep = IEPModel(
+            student_id=iep_data.student_id,
+            primary_disability=iep_data.primary_disability,
+            secondary_disabilities=[d.value for d in iep_data.secondary_disabilities],
+            accommodations=[
+                {
+                    "type": a.accommodation_type.value,
+                    "enabled": a.enabled,
+                    "settings": a.settings,
+                }
+                for a in iep_data.accommodations
+            ],
+            modifications=iep_data.modifications,
+            goals=iep_data.goals,
+            last_reviewed=iep_data.last_reviewed or datetime.utcnow(),
+            next_review_due=iep_data.next_review_due or (datetime.utcnow() + timedelta(days=365)),
+        )
+
+        self.db.add(iep)
+        self.db.commit()
+        self.db.refresh(iep)
+
+        return self.get_iep_accommodations(iep_data.student_id)
+
+    def create_mastery_estimate(self, mastery_data: "ConceptMasteryCreate") -> "ConceptMastery":
+        """
+        Create new mastery estimate for a student-concept pair.
+
+        Args:
+            mastery_data: Mastery creation data
+
+        Returns:
+            Created ConceptMastery
+        """
+        # Use update_mastery_estimate which handles create-or-update
+        return self.update_mastery_estimate(
+            student_id=mastery_data.student_id,
+            concept_id=mastery_data.concept_id,
+            new_mastery=mastery_data.mastery_probability,
+            concept_name=mastery_data.concept_name,
+        )
 
     def bulk_import_students(self, students_data: List[BulkImportRow], class_id: str) -> BulkImportResult:
         """
@@ -498,8 +554,11 @@ class StudentModelInterface:
             primary_disability=iep.primary_disability,
             secondary_disabilities=[DisabilityCategory(d) for d in iep.secondary_disabilities],
             accommodations=[
-                {"type": a["type"], "enabled": a.get("enabled", True), "settings": a.get("settings", {})}
-                for a in iep.accommodations
+                IEPAccommodation(
+                    accommodation_type=AccommodationType(a["type"]),
+                    enabled=a.get("enabled", True),
+                    settings=a.get("settings", {})
+                ) for a in iep.accommodations
             ],
             modifications=iep.modifications,
             goals=iep.goals,

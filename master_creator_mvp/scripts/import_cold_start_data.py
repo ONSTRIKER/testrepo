@@ -38,9 +38,10 @@ def map_disability_category(category_str: str) -> DisabilityCategory:
         "EMOTIONAL_DISTURBANCE": DisabilityCategory.EMOTIONAL_DISTURBANCE,
         "SPEECH_LANGUAGE": DisabilityCategory.SPEECH_LANGUAGE,
         "INTELLECTUAL_DISABILITY": DisabilityCategory.INTELLECTUAL_DISABILITY,
-        "OTHER": DisabilityCategory.OTHER,
+        "OTHER_HEALTH_IMPAIRMENT": DisabilityCategory.OTHER_HEALTH_IMPAIRMENT,
+        "OTHER": DisabilityCategory.OTHER_HEALTH_IMPAIRMENT,
     }
-    return mapping.get(category_str, DisabilityCategory.OTHER)
+    return mapping.get(category_str, DisabilityCategory.NONE)
 
 
 def map_accommodation_type(type_str: str) -> AccommodationType:
@@ -130,12 +131,14 @@ def import_student_profiles(json_file_path: str, dry_run: bool = False):
             student_data = StudentProfileCreate(
                 student_name=profile["student_name"],
                 grade_level=GradeLevel(profile["grade_level"]),
+                class_id=data["class_id"],  # Use class_id from top-level data
                 has_iep=profile["has_iep"],
                 reading_level=map_reading_level(profile["reading_level"]),
             )
 
             # Create student in database
-            student_id = student_model.create_student_profile(student_data)
+            student_profile = student_model.create_student_profile(student_data)
+            student_id = student_profile.student_id
             print(f"  ✅ Created student: {student_id}")
             imported_count += 1
 
@@ -144,8 +147,11 @@ def import_student_profiles(json_file_path: str, dry_run: bool = False):
                 accommodations = [
                     AccommodationCreate(
                         accommodation_type=map_accommodation_type(acc["type"]),
-                        description=acc["description"],
-                        details=acc.get("details", ""),
+                        enabled=True,
+                        settings={
+                            "description": acc.get("description", ""),
+                            "details": acc.get("details", "")
+                        }
                     )
                     for acc in profile["accommodations"]
                 ]
@@ -165,9 +171,13 @@ def import_student_profiles(json_file_path: str, dry_run: bool = False):
             # Create initial mastery estimates
             if "initial_mastery" in profile:
                 for concept_id, mastery_prob in profile["initial_mastery"].items():
+                    # Generate human-readable concept name from ID
+                    concept_name = concept_id.replace("_", " ").title()
+
                     mastery_data = ConceptMasteryCreate(
                         student_id=student_id,
                         concept_id=concept_id,
+                        concept_name=concept_name,
                         mastery_probability=mastery_prob,
                         p_learn=0.3,  # Default BKT parameters
                         p_guess=0.25,

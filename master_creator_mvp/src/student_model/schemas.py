@@ -179,6 +179,27 @@ class IEPAccommodation(BaseModel):
     )
 
 
+class AccommodationCreate(BaseModel):
+    """Schema for creating accommodations."""
+
+    accommodation_type: AccommodationType
+    enabled: bool = True
+    settings: Dict[str, Any] = Field(default_factory=dict)
+
+
+class IEPCreate(BaseModel):
+    """Schema for creating IEP records."""
+
+    student_id: str
+    primary_disability: DisabilityCategory
+    secondary_disabilities: List[DisabilityCategory] = []
+    accommodations: List[AccommodationCreate] = []
+    modifications: Dict[str, Any] = Field(default_factory=dict)
+    goals: List[str] = Field(default_factory=list)
+    last_reviewed: Optional[datetime] = None
+    next_review_due: Optional[datetime] = None
+
+
 class IEPData(BaseModel):
     """Complete IEP information for a student."""
 
@@ -215,6 +236,19 @@ class IEPAccommodationUpdate(BaseModel):
 # PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 # MASTERY & ASSESSMENT SCHEMAS
 # PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+
+
+class ConceptMasteryCreate(BaseModel):
+    """Schema for creating concept mastery records."""
+
+    student_id: str
+    concept_id: str
+    concept_name: str
+    mastery_probability: float = Field(..., ge=0.0, le=1.0)
+    p_learn: float = Field(default=0.3, ge=0.0, le=1.0)
+    p_guess: float = Field(default=0.25, ge=0.0, le=1.0)
+    p_slip: float = Field(default=0.1, ge=0.0, le=1.0)
+    num_observations: int = Field(default=0)
 
 
 class ConceptMastery(BaseModel):
