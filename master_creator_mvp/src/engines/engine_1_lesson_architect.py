@@ -145,8 +145,22 @@ class LessonArchitect(BaseEngine):
         self._log_decision("Calling Claude API for lesson generation")
         response_text = self._call_claude(system_prompt, user_prompt)
 
+        # DEBUG: Log the raw response
+        print("\n" + "="*80)
+        print("CLAUDE RESPONSE (first 1000 chars):")
+        print("="*80)
+        print(response_text[:1000])
+        print("="*80 + "\n")
+
         # Step 4: Parse response into structured format
         lesson_data = self._parse_lesson_response(response_text)
+
+        # DEBUG: Log parsed data
+        print("\n" + "="*80)
+        print("PARSED LESSON DATA:")
+        print("="*80)
+        print(f"Keys in lesson_data: {list(lesson_data.keys())}")
+        print("="*80 + "\n")
 
         # Step 4.5: Validate that we have sections
         if "sections" not in lesson_data:
