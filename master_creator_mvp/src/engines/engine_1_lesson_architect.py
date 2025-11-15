@@ -148,6 +148,12 @@ class LessonArchitect(BaseEngine):
         # Step 4: Parse response into structured format
         lesson_data = self._parse_lesson_response(response_text)
 
+        # Step 4.5: Validate that we have sections
+        if "sections" not in lesson_data:
+            error_msg = f"Claude response missing 'sections' key. Response preview: {str(lesson_data)[:500]}"
+            self._log_decision(error_msg, level="error")
+            raise ValueError(f"Invalid lesson response format: missing 'sections' key. This usually means the Claude API call failed or returned an unexpected format.")
+
         # Step 5: Build LessonBlueprint
         sections = []
         for idx, section_data in enumerate(lesson_data["sections"], start=1):
