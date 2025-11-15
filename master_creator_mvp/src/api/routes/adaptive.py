@@ -12,6 +12,8 @@ import logging
 from ...engines.engine_4_adaptive import AdaptiveEngine
 from ...engines.engine_6_feedback import FeedbackLoop
 from ...content_storage.interface import ContentStorageInterface
+from ...student_model.interface import StudentModelInterface
+from ...api.websocket import manager
 
 logger = logging.getLogger("api.adaptive")
 
@@ -82,6 +84,20 @@ async def generate_adaptive_plan(request: AdaptivePlanRequest):
 
         logger.info(f"Adaptive plan generated: {plan.plan_id} | Cost: ${cost_summary['total_cost']:.4f}")
 
+        # Broadcast recommendations for each student in the plan via WebSocket
+        try:
+            for student_path in plan_data.get("student_paths", []):
+                student_id = student_path.get("student_id")
+                if student_id:
+                    await manager.broadcast_recommendation_generated(
+                        class_id=request.class_id,
+                        student_id=student_id,
+                        recommendations=student_path
+                    )
+            logger.info(f"Broadcasted class-wide recommendations for {len(plan_data.get('student_paths', []))} students")
+        except Exception as ws_error:
+            logger.warning(f"Failed to broadcast class plan events: {str(ws_error)}")
+
         return {
             "status": "success",
             "adaptive_plan": plan.model_dump(),
@@ -118,6 +134,21 @@ async def generate_student_path(student_id: str, concept_ids: List[str]):
         )
 
         logger.info(f"Learning path generated: {path.path_id}")
+
+        # Broadcast recommendation generated event via WebSocket
+        try:
+            with StudentModelInterface() as sm:
+                student = sm.get_student(student_id)
+                if student:
+                    class_id = student.class_id
+                    await manager.broadcast_recommendation_generated(
+                        class_id=class_id,
+                        student_id=student_id,
+                        recommendations=path.model_dump()
+                    )
+                    logger.info(f"Broadcasted recommendations for student {student_id}")
+        except Exception as ws_error:
+            logger.warning(f"Failed to broadcast recommendation event: {str(ws_error)}")
 
         return {
             "status": "success",

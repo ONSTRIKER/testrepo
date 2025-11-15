@@ -16,6 +16,7 @@ function StudentPerformanceDashboard({ classId = "class_001" }) {
   const [error, setError] = useState(null);
   const [adaptiveRecommendations, setAdaptiveRecommendations] = useState(null);
   const [generatingRecommendations, setGeneratingRecommendations] = useState(false);
+  const [wsConnected, setWsConnected] = useState(false);
 
   // Load class roster and student data
   useEffect(() => {
@@ -26,6 +27,181 @@ function StudentPerformanceDashboard({ classId = "class_001" }) {
   useEffect(() => {
     setAdaptiveRecommendations(null);
   }, [selectedStudent]);
+
+  // WebSocket connection for real-time updates
+  useEffect(() => {
+    console.log('Connecting to dashboard WebSocket for class:', classId);
+
+    // Handle incoming WebSocket messages
+    const handleWebSocketMessage = (data) => {
+      console.log('WebSocket message received:', data);
+
+      if (data.type === 'connection_confirmed') {
+        setWsConnected(true);
+        console.log('Dashboard WebSocket connected successfully');
+        return;
+      }
+
+      if (data.type === 'pong') {
+        // Heartbeat response - connection is alive
+        return;
+      }
+
+      // Handle different update types
+      switch (data.type) {
+        case 'student_update':
+          handleStudentUpdate(data);
+          break;
+
+        case 'assessment_graded':
+          handleAssessmentGraded(data);
+          break;
+
+        case 'mastery_update':
+          handleMasteryUpdate(data);
+          break;
+
+        case 'recommendation_generated':
+          handleRecommendationGenerated(data);
+          break;
+
+        default:
+          console.log('Unknown WebSocket message type:', data.type);
+      }
+    };
+
+    const handleWebSocketError = (error) => {
+      console.error('Dashboard WebSocket error:', error);
+      setWsConnected(false);
+    };
+
+    // Connect to dashboard WebSocket
+    const ws = api.connectToDashboard(classId, handleWebSocketMessage, handleWebSocketError);
+
+    // Cleanup on unmount
+    return () => {
+      console.log('Disconnecting dashboard WebSocket');
+      api.disconnectDashboard();
+      setWsConnected(false);
+    };
+  }, [classId]);
+
+  // Handle real-time student update
+  const handleStudentUpdate = async (data) => {
+    console.log('Student update received:', data);
+
+    const studentId = data.student_id;
+    if (!studentId) return;
+
+    try {
+      // Reload student data
+      const profile = await api.getStudentProfile(studentId);
+      const knowledgeState = await api.getStudentKnowledgeState(studentId);
+      const updatedStudent = transformStudentData(profile, knowledgeState);
+
+      // Update students list
+      setStudents(prevStudents => {
+        const index = prevStudents.findIndex(s => s.id === studentId);
+        if (index >= 0) {
+          const newStudents = [...prevStudents];
+          newStudents[index] = updatedStudent;
+          return newStudents;
+        } else {
+          // New student added
+          return [...prevStudents, updatedStudent];
+        }
+      });
+
+      // Update selected student if it's the same one
+      if (selectedStudent && selectedStudent.id === studentId) {
+        setSelectedStudent(updatedStudent);
+      }
+
+      console.log('Student data updated in real-time:', studentId);
+    } catch (err) {
+      console.error('Error handling student update:', err);
+    }
+  };
+
+  // Handle real-time assessment grading
+  const handleAssessmentGraded = async (data) => {
+    console.log('Assessment graded:', data);
+
+    const studentId = data.student_id;
+    if (!studentId) return;
+
+    // Reload student data to get updated mastery
+    try {
+      const profile = await api.getStudentProfile(studentId);
+      const knowledgeState = await api.getStudentKnowledgeState(studentId);
+      const updatedStudent = transformStudentData(profile, knowledgeState);
+
+      setStudents(prevStudents => {
+        const index = prevStudents.findIndex(s => s.id === studentId);
+        if (index >= 0) {
+          const newStudents = [...prevStudents];
+          newStudents[index] = updatedStudent;
+          return newStudents;
+        }
+        return prevStudents;
+      });
+
+      if (selectedStudent && selectedStudent.id === studentId) {
+        setSelectedStudent(updatedStudent);
+      }
+
+      console.log('Student data updated after assessment:', studentId);
+    } catch (err) {
+      console.error('Error handling assessment graded:', err);
+    }
+  };
+
+  // Handle real-time mastery update
+  const handleMasteryUpdate = async (data) => {
+    console.log('Mastery update received:', data);
+
+    const studentId = data.student_id;
+    if (!studentId) return;
+
+    // Reload student data
+    try {
+      const profile = await api.getStudentProfile(studentId);
+      const knowledgeState = await api.getStudentKnowledgeState(studentId);
+      const updatedStudent = transformStudentData(profile, knowledgeState);
+
+      setStudents(prevStudents => {
+        const index = prevStudents.findIndex(s => s.id === studentId);
+        if (index >= 0) {
+          const newStudents = [...prevStudents];
+          newStudents[index] = updatedStudent;
+          return newStudents;
+        }
+        return prevStudents;
+      });
+
+      if (selectedStudent && selectedStudent.id === studentId) {
+        setSelectedStudent(updatedStudent);
+      }
+
+      console.log('Mastery data updated in real-time:', studentId);
+    } catch (err) {
+      console.error('Error handling mastery update:', err);
+    }
+  };
+
+  // Handle real-time recommendation generation
+  const handleRecommendationGenerated = (data) => {
+    console.log('Recommendations generated:', data);
+
+    const studentId = data.student_id;
+    const recommendations = data.recommendations;
+
+    // Update recommendations if this is for the currently selected student
+    if (selectedStudent && selectedStudent.id === studentId && recommendations) {
+      setAdaptiveRecommendations(recommendations);
+      console.log('Adaptive recommendations updated in real-time for:', studentId);
+    }
+  };
 
   const loadClassData = async () => {
     setLoading(true);
@@ -403,8 +579,18 @@ function StudentPerformanceDashboard({ classId = "class_001" }) {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg shadow-lg p-6 mb-6">
-          <h1 className="text-3xl font-bold mb-2">Master Creator v3 MVP - Student Performance Dashboard</h1>
-          <p className="text-blue-100">Real-time adaptive learning analytics powered by Engine 5 (Diagnostic) + Engine 6 (Feedback Loop)</p>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold mb-2">Master Creator v3 MVP - Student Performance Dashboard</h1>
+              <p className="text-blue-100">Real-time adaptive learning analytics powered by Engine 5 (Diagnostic) + Engine 6 (Feedback Loop)</p>
+            </div>
+            <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-lg">
+              <div className={`w-3 h-3 rounded-full ${wsConnected ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`}></div>
+              <span className="text-sm font-medium">
+                {wsConnected ? 'Live Updates Active' : 'Connecting...'}
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* View Toggle */}

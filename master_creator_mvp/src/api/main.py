@@ -24,6 +24,7 @@ from fastapi.responses import JSONResponse
 import logging
 
 from .routes import lessons, students, assessments, worksheets, pipeline, adaptive
+from .websocket import routes as websocket_routes
 
 # Configure logging
 logging.basicConfig(
@@ -71,6 +72,7 @@ app.include_router(assessments.router, prefix="/api/assessments", tags=["Assessm
 app.include_router(worksheets.router, prefix="/api/worksheets", tags=["Worksheets"])
 app.include_router(pipeline.router, prefix="/api/pipeline", tags=["Pipeline"])
 app.include_router(adaptive.router, prefix="/api/adaptive", tags=["Adaptive"])
+app.include_router(websocket_routes.router, tags=["WebSocket"])
 
 # PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
 # HEALTH CHECK
@@ -101,6 +103,12 @@ async def root():
             "worksheets": "/api/worksheets",
             "pipeline": "/api/pipeline",
             "adaptive": "/api/adaptive",
+        },
+        "websockets": {
+            "dashboard": "ws://localhost:8080/ws/dashboard/{class_id}",
+            "student": "ws://localhost:8080/ws/student/{student_id}",
+            "pipeline": "ws://localhost:8080/ws/pipeline/{job_id}",
+            "status": "/api/ws/status",
         },
     }
 

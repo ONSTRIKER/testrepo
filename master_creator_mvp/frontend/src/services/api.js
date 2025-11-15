@@ -12,8 +12,10 @@ class MasterCreatorAPI {
       },
     });
 
-    // WebSocket for real-time pipeline updates
-    this.ws = null;
+    // WebSockets for real-time updates
+    this.pipelineWs = null;
+    this.dashboardWs = null;
+    this.studentWs = null;
   }
 
   // ==================== ENGINE 0: UNIT PLAN DESIGNER ====================
@@ -162,28 +164,131 @@ class MasterCreatorAPI {
     return response.data;
   }
 
+  // ==================== WEBSOCKET CONNECTIONS ====================
+
   // WebSocket connection for real-time pipeline updates
   connectToPipeline(jobId, onMessage) {
     const wsUrl = `${WS_BASE}${window.location.host}/ws/pipeline/${jobId}`;
-    this.ws = new WebSocket(wsUrl);
+    this.pipelineWs = new WebSocket(wsUrl);
 
-    this.ws.onmessage = (event) => {
+    this.pipelineWs.onmessage = (event) => {
       const data = JSON.parse(event.data);
       onMessage(data);
     };
 
-    this.ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
+    this.pipelineWs.onerror = (error) => {
+      console.error('Pipeline WebSocket error:', error);
     };
 
-    return this.ws;
+    this.pipelineWs.onclose = () => {
+      console.log('Pipeline WebSocket disconnected');
+    };
+
+    return this.pipelineWs;
   }
 
   disconnectPipeline() {
-    if (this.ws) {
-      this.ws.close();
-      this.ws = null;
+    if (this.pipelineWs) {
+      this.pipelineWs.close();
+      this.pipelineWs = null;
     }
+  }
+
+  // WebSocket connection for real-time dashboard updates
+  connectToDashboard(classId, onMessage, onError = null) {
+    // Close existing connection if any
+    this.disconnectDashboard();
+
+    const wsUrl = `${WS_BASE}${window.location.host}/ws/dashboard/${classId}`;
+    this.dashboardWs = new WebSocket(wsUrl);
+
+    this.dashboardWs.onopen = () => {
+      console.log(`Dashboard WebSocket connected to class ${classId}`);
+    };
+
+    this.dashboardWs.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      onMessage(data);
+    };
+
+    this.dashboardWs.onerror = (error) => {
+      console.error('Dashboard WebSocket error:', error);
+      if (onError) onError(error);
+    };
+
+    this.dashboardWs.onclose = () => {
+      console.log('Dashboard WebSocket disconnected');
+    };
+
+    // Set up heartbeat to keep connection alive
+    const heartbeatInterval = setInterval(() => {
+      if (this.dashboardWs && this.dashboardWs.readyState === WebSocket.OPEN) {
+        this.dashboardWs.send('ping');
+      } else {
+        clearInterval(heartbeatInterval);
+      }
+    }, 30000); // Ping every 30 seconds
+
+    return this.dashboardWs;
+  }
+
+  disconnectDashboard() {
+    if (this.dashboardWs) {
+      this.dashboardWs.close();
+      this.dashboardWs = null;
+    }
+  }
+
+  // WebSocket connection for individual student updates
+  connectToStudent(studentId, onMessage, onError = null) {
+    // Close existing connection if any
+    this.disconnectStudent();
+
+    const wsUrl = `${WS_BASE}${window.location.host}/ws/student/${studentId}`;
+    this.studentWs = new WebSocket(wsUrl);
+
+    this.studentWs.onopen = () => {
+      console.log(`Student WebSocket connected to student ${studentId}`);
+    };
+
+    this.studentWs.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      onMessage(data);
+    };
+
+    this.studentWs.onerror = (error) => {
+      console.error('Student WebSocket error:', error);
+      if (onError) onError(error);
+    };
+
+    this.studentWs.onclose = () => {
+      console.log('Student WebSocket disconnected');
+    };
+
+    // Set up heartbeat to keep connection alive
+    const heartbeatInterval = setInterval(() => {
+      if (this.studentWs && this.studentWs.readyState === WebSocket.OPEN) {
+        this.studentWs.send('ping');
+      } else {
+        clearInterval(heartbeatInterval);
+      }
+    }, 30000); // Ping every 30 seconds
+
+    return this.studentWs;
+  }
+
+  disconnectStudent() {
+    if (this.studentWs) {
+      this.studentWs.close();
+      this.studentWs = null;
+    }
+  }
+
+  // Disconnect all WebSocket connections
+  disconnectAll() {
+    this.disconnectPipeline();
+    this.disconnectDashboard();
+    this.disconnectStudent();
   }
 }
 

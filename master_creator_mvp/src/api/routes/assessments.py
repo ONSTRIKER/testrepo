@@ -12,6 +12,7 @@ import logging
 from ...grader.constructed_response import AssessmentGrader, AssessmentQuestion, StudentSubmission
 from ...student_model.interface import StudentModelInterface
 from ...content_storage.interface import ContentStorageInterface
+from ...api.websocket import manager
 
 logger = logging.getLogger("api.assessments")
 
@@ -112,6 +113,29 @@ async def submit_assessment(request: SubmitAssessmentRequest):
             f"Score: {graded.score_percentage:.1f}% | "
             f"Cost: ${graded.cost:.4f}"
         )
+
+        # Broadcast assessment graded event via WebSocket
+        try:
+            # Get student's class ID for broadcasting
+            with StudentModelInterface() as sm:
+                student = sm.get_student(request.student_id)
+                if student:
+                    class_id = student.class_id
+                    await manager.broadcast_assessment_graded(
+                        class_id=class_id,
+                        student_id=request.student_id,
+                        assessment_data={
+                            "assessment_id": request.assessment_id,
+                            "grading_id": graded.grading_id,
+                            "score_percentage": graded.score_percentage,
+                            "total_points": graded.total_points_earned,
+                            "graded_at": graded.graded_at
+                        }
+                    )
+                    logger.info(f"Broadcasted assessment graded event for student {request.student_id}")
+        except Exception as ws_error:
+            # Log but don't fail the request if WebSocket broadcast fails
+            logger.warning(f"Failed to broadcast assessment graded event: {str(ws_error)}")
 
         return {
             "status": "success",
@@ -269,6 +293,26 @@ async def batch_grade_assessments(
                 )
 
             graded_results.append(graded.model_dump())
+
+            # Broadcast assessment graded event via WebSocket
+            try:
+                with StudentModelInterface() as sm:
+                    student = sm.get_student(sub["student_id"])
+                    if student:
+                        class_id = student.class_id
+                        await manager.broadcast_assessment_graded(
+                            class_id=class_id,
+                            student_id=sub["student_id"],
+                            assessment_data={
+                                "assessment_id": assessment_id,
+                                "grading_id": graded.grading_id,
+                                "score_percentage": graded.score_percentage,
+                                "total_points": graded.total_points_earned,
+                                "graded_at": graded.graded_at
+                            }
+                        )
+            except Exception as ws_error:
+                logger.warning(f"Failed to broadcast batch graded event for student {sub['student_id']}: {str(ws_error)}")
 
         logger.info(f"Batch grading complete: {len(graded_results)} assessments graded")
 
