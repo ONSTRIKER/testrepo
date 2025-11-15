@@ -120,10 +120,15 @@ class LessonArchitect(BaseEngine):
         class_context = None
         if class_id:
             class_context = self._get_class_context(class_id)
-            self._log_decision(
-                f"Class context: {class_context['total_students']} students, "
-                f"{class_context['students_with_ieps']} with IEPs"
-            )
+            # Only log if class was found (doesn't have 'error' key)
+            if class_context and 'error' not in class_context:
+                self._log_decision(
+                    f"Class context: {class_context['total_students']} students, "
+                    f"{class_context['students_with_ieps']} with IEPs"
+                )
+            else:
+                self._log_decision(f"Class {class_id} not found, proceeding without class context", level="warning")
+                class_context = None  # Set to None so it's not used in prompts
 
         # Step 2: Build prompt for Claude
         system_prompt = self._build_system_prompt()
@@ -140,8 +145,28 @@ class LessonArchitect(BaseEngine):
         self._log_decision("Calling Claude API for lesson generation")
         response_text = self._call_claude(system_prompt, user_prompt)
 
+        # DEBUG: Log the raw response
+        print("\n" + "="*80)
+        print("CLAUDE RESPONSE (first 1000 chars):")
+        print("="*80)
+        print(response_text[:1000])
+        print("="*80 + "\n")
+
         # Step 4: Parse response into structured format
         lesson_data = self._parse_lesson_response(response_text)
+
+        # DEBUG: Log parsed data
+        print("\n" + "="*80)
+        print("PARSED LESSON DATA:")
+        print("="*80)
+        print(f"Keys in lesson_data: {list(lesson_data.keys())}")
+        print("="*80 + "\n")
+
+        # Step 4.5: Validate that we have sections
+        if "sections" not in lesson_data:
+            error_msg = f"Claude response missing 'sections' key. Response preview: {str(lesson_data)[:500]}"
+            self._log_decision(error_msg, level="error")
+            raise ValueError(f"Invalid lesson response format: missing 'sections' key. This usually means the Claude API call failed or returned an unexpected format.")
 
         # Step 5: Build LessonBlueprint
         sections = []

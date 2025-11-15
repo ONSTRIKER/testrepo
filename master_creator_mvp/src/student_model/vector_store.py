@@ -51,10 +51,15 @@ def get_chroma_client(persistent: bool = True):
         return None
 
     if persistent:
-        # Connect to Chroma server (Docker container)
-        return chromadb.HttpClient(
-            host=CHROMA_HOST,
-            port=CHROMA_PORT,
+        # Use persistent local storage (no server needed)
+        import os
+        persist_dir = os.getenv("CHROMA_PERSIST_DIRECTORY", "./chroma_data")
+
+        # Create directory if it doesn't exist
+        os.makedirs(persist_dir, exist_ok=True)
+
+        return chromadb.PersistentClient(
+            path=persist_dir,
             settings=Settings(anonymized_telemetry=False),
         )
     else:
