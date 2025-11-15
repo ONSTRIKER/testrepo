@@ -60,7 +60,7 @@ class ConnectionManager:
         await self.send_personal_message(
             websocket,
             {
-                "type": "connection_established",
+                "type": "connection_confirmed",
                 "connection_type": connection_type,
                 "resource_id": resource_id,
                 "message": f"Connected to {connection_type} updates for {resource_id}"
@@ -173,7 +173,7 @@ class ConnectionManager:
             "type": "assessment_graded",
             "student_id": student_id,
             "class_id": class_id,
-            "data": assessment_data
+            **assessment_data  # Spread assessment data into message
         }
 
         await self.broadcast_to_type("dashboard", class_id, message)
@@ -211,7 +211,7 @@ class ConnectionManager:
             "type": "recommendation_generated",
             "student_id": student_id,
             "class_id": class_id,
-            "data": recommendations
+            "recommendations": recommendations  # Frontend expects "recommendations" field
         }
 
         await self.broadcast_to_type("dashboard", class_id, message)
