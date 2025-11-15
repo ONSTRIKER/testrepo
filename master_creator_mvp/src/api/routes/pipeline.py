@@ -12,6 +12,7 @@ import asyncio
 
 from ...orchestration.langgraph_pipeline import run_async_pipeline, run_sync_pipeline
 from ...orchestration.pipeline import run_pipeline
+from ...content_storage.interface import ContentStorageInterface
 
 logger = logging.getLogger("api.pipeline")
 
@@ -247,5 +248,31 @@ async def get_pipeline_results(pipeline_id: str):
     Returns:
         Full pipeline results if found
     """
-    # TODO: Implement pipeline retrieval from database
-    raise HTTPException(status_code=501, detail="Pipeline retrieval not yet implemented")
+    try:
+        with ContentStorageInterface() as storage:
+            pipeline_status = storage.get_pipeline_status(pipeline_id)
+
+        if not pipeline_status:
+            # Check in-memory results for async pipelines
+            if pipeline_id in pipeline_results:
+                result = pipeline_results[pipeline_id]
+                return {
+                    "status": "success",
+                    "pipeline_result": result if isinstance(result, dict) else result.model_dump()
+                }
+
+            raise HTTPException(
+                status_code=404,
+                detail=f"Pipeline results not found: {pipeline_id}"
+            )
+
+        return {
+            "status": "success",
+            "pipeline_status": pipeline_status
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving pipeline results: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))

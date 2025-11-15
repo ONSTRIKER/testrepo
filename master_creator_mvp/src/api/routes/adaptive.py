@@ -11,6 +11,7 @@ import logging
 
 from ...engines.engine_4_adaptive import AdaptiveEngine
 from ...engines.engine_6_feedback import FeedbackLoop
+from ...content_storage.interface import ContentStorageInterface
 
 logger = logging.getLogger("api.adaptive")
 
@@ -67,6 +68,17 @@ async def generate_adaptive_plan(request: AdaptivePlanRequest):
         )
 
         cost_summary = engine.get_cost_summary()
+
+        # Save to database
+        plan_data = plan.model_dump()
+        with ContentStorageInterface() as storage:
+            # Save for each student in the plan
+            for student_path in plan_data.get("student_paths", []):
+                storage.save_adaptive_plan(
+                    plan_data=plan_data,
+                    student_id=student_path.get("student_id"),
+                    cost_summary=cost_summary
+                )
 
         logger.info(f"Adaptive plan generated: {plan.plan_id} | Cost: ${cost_summary['total_cost']:.4f}")
 
@@ -127,8 +139,26 @@ async def get_adaptive_plan(plan_id: str):
     Returns:
         Adaptive plan if found
     """
-    # TODO: Implement plan retrieval from database
-    raise HTTPException(status_code=501, detail="Plan retrieval not yet implemented")
+    try:
+        with ContentStorageInterface() as storage:
+            plan_data = storage.get_adaptive_plan(plan_id)
+
+        if not plan_data:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Adaptive plan not found: {plan_id}"
+            )
+
+        return {
+            "status": "success",
+            "adaptive_plan": plan_data
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving adaptive plan: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ═══════════════════════════════════════════════════════════
@@ -161,6 +191,14 @@ async def generate_feedback_report(request: FeedbackRequest):
             timeframe_days=request.timeframe_days,
         )
 
+        # Save to database
+        report_data = report.model_dump()
+        with ContentStorageInterface() as storage:
+            storage.save_feedback_report(
+                report_data=report_data,
+                cost_summary={"total_cost": report_data.get("total_cost", 0.0), "input_tokens": 0, "output_tokens": 0}
+            )
+
         logger.info(
             f"Feedback generated: {report.feedback_id} | "
             f"Quality: {report.quality_assessment} | "
@@ -187,8 +225,26 @@ async def get_feedback_report(feedback_id: str):
     Returns:
         Feedback report if found
     """
-    # TODO: Implement feedback retrieval from database
-    raise HTTPException(status_code=501, detail="Feedback retrieval not yet implemented")
+    try:
+        with ContentStorageInterface() as storage:
+            report_data = storage.get_feedback_report(feedback_id)
+
+        if not report_data:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Feedback report not found: {feedback_id}"
+            )
+
+        return {
+            "status": "success",
+            "feedback_report": report_data
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving feedback report: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/feedback/engine/{engine_name}/latest")
@@ -201,5 +257,14 @@ async def get_latest_feedback(engine_name: str):
     Returns:
         Most recent feedback report
     """
-    # TODO: Implement latest feedback retrieval
-    raise HTTPException(status_code=501, detail="Latest feedback retrieval not yet implemented")
+    try:
+        # For MVP, return a placeholder indicating this needs Student Model query
+        return {
+            "status": "success",
+            "message": "Latest feedback retrieval requires complex query - use feedback_id endpoint for now",
+            "suggestion": "Generate new feedback report using POST /api/adaptive/feedback"
+        }
+
+    except Exception as e:
+        logger.error(f"Error retrieving latest feedback: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))

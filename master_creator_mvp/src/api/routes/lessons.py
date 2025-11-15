@@ -11,6 +11,7 @@ import logging
 
 from ...engines.engine_0_unit_planner import UnitPlanDesigner
 from ...engines.engine_1_lesson_architect import LessonArchitect
+from ...content_storage.interface import ContentStorageInterface
 
 logger = logging.getLogger("api.lessons")
 
@@ -84,6 +85,14 @@ async def generate_unit_plan(request: UnitPlanRequest):
 
         cost_summary = engine.get_cost_summary()
 
+        # Save to database
+        with ContentStorageInterface() as storage:
+            storage.save_unit_plan(
+                unit_data=unit_plan.model_dump(),
+                cost_summary=cost_summary,
+                class_id=request.class_id
+            )
+
         logger.info(f"Unit plan generated: {unit_plan.unit_id} | Cost: ${cost_summary['total_cost']:.4f}")
 
         return {
@@ -132,6 +141,14 @@ async def generate_lesson(request: LessonRequest):
 
         cost_summary = engine.get_cost_summary()
 
+        # Save to database
+        with ContentStorageInterface() as storage:
+            storage.save_lesson(
+                lesson_data=lesson.model_dump(),
+                cost_summary=cost_summary,
+                class_id=request.class_id
+            )
+
         logger.info(f"Lesson generated: {lesson.lesson_id} | Cost: ${cost_summary['total_cost']:.4f}")
 
         return {
@@ -155,8 +172,26 @@ async def get_lesson(lesson_id: str):
     Returns:
         Lesson blueprint if found
     """
-    # TODO: Implement lesson retrieval from database
-    raise HTTPException(status_code=501, detail="Lesson retrieval not yet implemented")
+    try:
+        with ContentStorageInterface() as storage:
+            lesson_data = storage.get_lesson(lesson_id)
+
+        if not lesson_data:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Lesson not found: {lesson_id}"
+            )
+
+        return {
+            "status": "success",
+            "lesson": lesson_data
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving lesson: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/units/{unit_id}")
@@ -169,5 +204,23 @@ async def get_unit(unit_id: str):
     Returns:
         Unit plan if found
     """
-    # TODO: Implement unit retrieval from database
-    raise HTTPException(status_code=501, detail="Unit retrieval not yet implemented")
+    try:
+        with ContentStorageInterface() as storage:
+            unit_data = storage.get_unit_plan(unit_id)
+
+        if not unit_data:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Unit plan not found: {unit_id}"
+            )
+
+        return {
+            "status": "success",
+            "unit_plan": unit_data
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving unit plan: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))

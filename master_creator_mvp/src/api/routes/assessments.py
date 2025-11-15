@@ -11,6 +11,7 @@ import logging
 
 from ...grader.constructed_response import AssessmentGrader, AssessmentQuestion, StudentSubmission
 from ...student_model.interface import StudentModelInterface
+from ...content_storage.interface import ContentStorageInterface
 
 logger = logging.getLogger("api.assessments")
 
@@ -96,6 +97,16 @@ async def submit_assessment(request: SubmitAssessmentRequest):
             update_mastery=request.update_mastery,
         )
 
+        # Save to database
+        graded_data = graded.model_dump()
+        with ContentStorageInterface() as storage:
+            storage.save_graded_assessment(
+                graded_data=graded_data,
+                assessment_id=request.assessment_id,
+                student_id=request.student_id,
+                cost_summary={"total_cost": graded.cost, "input_tokens": 0, "output_tokens": 0}
+            )
+
         logger.info(
             f"Assessment graded: {graded.grading_id} | "
             f"Score: {graded.score_percentage:.1f}% | "
@@ -122,8 +133,42 @@ async def get_assessment_results(assessment_id: str, student_id: str):
     Returns:
         Graded assessment if found
     """
-    # TODO: Implement assessment retrieval from database
-    raise HTTPException(status_code=501, detail="Assessment retrieval not yet implemented")
+    try:
+        # Query Student Model for assessment history
+        with StudentModelInterface() as sm:
+            assessments = sm.get_assessment_history(student_id, limit=100)
+
+        # Find matching assessment
+        matching_assessment = None
+        for assessment in assessments:
+            if assessment.assessment_id == assessment_id:
+                matching_assessment = assessment
+                break
+
+        if not matching_assessment:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Assessment results not found for student {student_id} and assessment {assessment_id}"
+            )
+
+        return {
+            "status": "success",
+            "assessment": {
+                "assessment_id": matching_assessment.assessment_id,
+                "student_id": student_id,
+                "percentage": matching_assessment.percentage,
+                "raw_score": matching_assessment.raw_score,
+                "max_score": matching_assessment.max_score,
+                "submitted_at": matching_assessment.submitted_at,
+                "graded_at": matching_assessment.graded_at,
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving assessment results: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/students/{student_id}/history")
@@ -136,8 +181,29 @@ async def get_student_assessment_history(student_id: str, limit: int = 10):
     Returns:
         List of graded assessments for student
     """
-    # TODO: Implement assessment history retrieval
-    raise HTTPException(status_code=501, detail="Assessment history not yet implemented")
+    try:
+        with StudentModelInterface() as sm:
+            assessments = sm.get_assessment_history(student_id, limit=limit)
+
+        return {
+            "status": "success",
+            "assessments": [
+                {
+                    "assessment_id": a.assessment_id,
+                    "percentage": a.percentage,
+                    "raw_score": a.raw_score,
+                    "max_score": a.max_score,
+                    "submitted_at": a.submitted_at,
+                    "graded_at": a.graded_at,
+                }
+                for a in assessments
+            ],
+            "count": len(assessments)
+        }
+
+    except Exception as e:
+        logger.error(f"Error retrieving assessment history: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/batch-grade")
@@ -191,6 +257,16 @@ async def batch_grade_assessments(
                 submission=submission,
                 update_mastery=True,
             )
+
+            # Save to database
+            graded_data = graded.model_dump()
+            with ContentStorageInterface() as storage:
+                storage.save_graded_assessment(
+                    graded_data=graded_data,
+                    assessment_id=assessment_id,
+                    student_id=sub["student_id"],
+                    cost_summary={"total_cost": graded.cost, "input_tokens": 0, "output_tokens": 0}
+                )
 
             graded_results.append(graded.model_dump())
 
