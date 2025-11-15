@@ -94,19 +94,23 @@ class MasterCreatorAPI {
   }
 
   // ==================== ENGINE 4: ADAPTIVE PERSONALIZATION ====================
-  async generateAdaptivePathway(params) {
-    const response = await this.client.post('/adaptive/generate', {
-      student_id: params.studentId,
-      worksheet_id: params.worksheetId,
-      current_mastery: params.currentMastery,
+  async generateAdaptivePlan(params) {
+    const response = await this.client.post('/adaptive/plan', {
+      class_id: params.classId,
+      concept_ids: params.conceptIds,
     });
     return response.data;
   }
 
-  async getAdaptiveBranches(studentId, worksheetId) {
-    const response = await this.client.get(
-      `/adaptive/student/${studentId}/branches`
-    );
+  async generateStudentPath(studentId, conceptIds) {
+    const response = await this.client.post(`/adaptive/students/${studentId}/path`, {
+      concept_ids: conceptIds,
+    });
+    return response.data;
+  }
+
+  async getAdaptivePlan(planId) {
+    const response = await this.client.get(`/adaptive/plans/${planId}`);
     return response.data;
   }
 

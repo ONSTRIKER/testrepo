@@ -14,11 +14,18 @@ function StudentPerformanceDashboard({ classId = "class_001" }) {
   const [view, setView] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [adaptiveRecommendations, setAdaptiveRecommendations] = useState(null);
+  const [generatingRecommendations, setGeneratingRecommendations] = useState(false);
 
   // Load class roster and student data
   useEffect(() => {
     loadClassData();
   }, [classId]);
+
+  // Clear recommendations when student changes
+  useEffect(() => {
+    setAdaptiveRecommendations(null);
+  }, [selectedStudent]);
 
   const loadClassData = async () => {
     setLoading(true);
@@ -283,6 +290,32 @@ function StudentPerformanceDashboard({ classId = "class_001" }) {
         ]
       }
     };
+  };
+
+  // Generate adaptive recommendations using Engine 4
+  const generateAdaptiveRecommendations = async (student) => {
+    if (!student) return;
+
+    setGeneratingRecommendations(true);
+    try {
+      // Extract concept IDs from student's knowledge state
+      const conceptIds = student.standards
+        ? Object.keys(student.standards)
+        : [];
+
+      // Call Engine 4 to generate personalized learning path
+      const response = await api.generateStudentPath(student.id, conceptIds);
+
+      // Set the recommendations
+      setAdaptiveRecommendations(response.learning_path);
+
+      console.log('Engine 4 recommendations generated:', response);
+    } catch (error) {
+      console.error('Error generating adaptive recommendations:', error);
+      setError('Failed to generate recommendations. Please try again.');
+    } finally {
+      setGeneratingRecommendations(false);
+    }
   };
 
   // Calculate class-wide statistics
@@ -760,12 +793,66 @@ function StudentPerformanceDashboard({ classId = "class_001" }) {
                 <p className="text-gray-700">{selectedStudent.next_steps}</p>
               </div>
 
+              {/* Display Engine 4 recommendations if available */}
+              {adaptiveRecommendations && (
+                <div className="mt-4 bg-white rounded-lg p-4 border-l-4 border-green-600">
+                  <p className="text-gray-800 font-medium mb-3 flex items-center">
+                    <Lightbulb className="mr-2 text-green-600" size={18} />
+                    Engine 4 Personalized Learning Path
+                  </p>
+                  <div className="space-y-2">
+                    <div className="text-sm">
+                      <strong>Path ID:</strong> {adaptiveRecommendations.path_id}
+                    </div>
+                    {adaptiveRecommendations.personalization_level && (
+                      <div className="text-sm">
+                        <strong>Personalization Level:</strong> {adaptiveRecommendations.personalization_level}
+                      </div>
+                    )}
+                    {adaptiveRecommendations.recommendations && (
+                      <div className="mt-3">
+                        <strong className="text-sm">Recommendations:</strong>
+                        <ul className="list-disc list-inside mt-2 space-y-1 text-sm text-gray-700">
+                          {adaptiveRecommendations.recommendations.map((rec, idx) => (
+                            <li key={idx}>{rec}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {adaptiveRecommendations.zpd_recommendations && (
+                      <div className="mt-3">
+                        <strong className="text-sm">Zone of Proximal Development:</strong>
+                        <ul className="list-disc list-inside mt-2 space-y-1 text-sm text-gray-700">
+                          {adaptiveRecommendations.zpd_recommendations.map((zpd, idx) => (
+                            <li key={idx}>{zpd}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="mt-6 flex gap-3">
                 <button
-                  onClick={() => alert('Integration with Engine 4 to generate detailed recommendations')}
-                  className="flex-1 bg-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-purple-700 transition-colors"
+                  onClick={() => generateAdaptiveRecommendations(selectedStudent)}
+                  disabled={generatingRecommendations}
+                  className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
+                    generatingRecommendations
+                      ? 'bg-gray-400 text-white cursor-not-allowed'
+                      : 'bg-purple-600 text-white hover:bg-purple-700'
+                  }`}
                 >
-                  Generate Detailed Recommendations
+                  {generatingRecommendations ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Generating...
+                    </span>
+                  ) : (
+                    <>
+                      {adaptiveRecommendations ? 'Regenerate' : 'Generate'} Detailed Recommendations
+                    </>
+                  )}
                 </button>
                 <button className="flex-1 bg-white text-purple-600 border-2 border-purple-600 py-3 px-4 rounded-lg font-medium hover:bg-purple-50 transition-colors">
                   View Lesson Plan
